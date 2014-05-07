@@ -1,3 +1,5 @@
+import tokenizer
+
 
 def get_query_dsl(query_string):
-    pass
+    tokens = tokenizer.tokenize(query_string)
