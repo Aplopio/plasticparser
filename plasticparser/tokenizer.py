@@ -13,4 +13,4 @@ def get_grammar():
 
 
 def tokenize(string):
-    return get_grammar().parseString(string).asList()
+    return get_grammar().parseString(string, parseAll=True).asList()

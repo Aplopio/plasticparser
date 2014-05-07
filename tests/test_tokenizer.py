@@ -13,6 +13,11 @@ class TokenizerTestCase(unittest.TestCase):
         tokens = tokenizer.tokenize('title:"abc def"')
         self.assertEqual(tokens, [['title', ':', 'abc def'], []])
 
+    def test_should_tokenize_simple_continious_colon(self):
+        tokens = tokenizer.tokenize('title:"abc:def"')
+        self.assertEqual(tokens, [['title', ':', 'abc:def'], []])
+
+
     def test_should_tokenize_simple_multiple_terms(self):
         tokens = tokenizer.tokenize('title:"abc def" description:def')
         self.assertEqual(tokens, [['title', ':', 'abc def'], ['description', ':', 'def']])
