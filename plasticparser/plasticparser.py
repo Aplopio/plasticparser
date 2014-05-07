@@ -4,10 +4,12 @@ from . import entities, tokenizer
 
 
 def _construct_query(tokens):
-    terms = entities.get_terms(tokens)
-    return {
-        "and": [term.get_query() for term in terms]
-    }
+    filters = entities.Filters(tokens)
+    query_dsl = {}
+    if filters.has_type_filter():
+        query_dsl['and'] = [filters.get_type_filter().get_query()]
+    query_dsl['or'] = [_filter.get_query() for _filter in filters.get_term_filters()]
+    return query_dsl
 
 
 def get_query_dsl(query_string):

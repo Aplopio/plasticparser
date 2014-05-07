@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, Literal, alphas, QuotedString, Group, ZeroOrMore
+from pyparsing import Word, Literal, alphas, QuotedString, Group, ZeroOrMore, Optional, OneOrMore
 
 
 def get_grammar():
@@ -8,8 +8,9 @@ def get_grammar():
     exact = QuotedString('"', unquoteResults=True, escChar='\\')
     term = exact | word
     comparison_term = word + Literal(':') + term
-    grammar = Group(comparison_term) + Group(ZeroOrMore(comparison_term))
-    return grammar
+    type_term = Word("type") + Literal(':') + Word(alphas)
+    query_group = Group(Optional(type_term)) + Group(OneOrMore(Group(comparison_term)))
+    return query_group
 
 
 def tokenize(string):
