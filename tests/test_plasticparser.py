@@ -101,5 +101,12 @@ class PlasticParserTestCase(unittest.TestCase):
         #     self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
 
+class GetDocTypesTest(unittest.TestCase):
+    def test_should_return_doc_types_of_query_string_if_any(self):
+        query_string = 'type:help title:hello description:"world"'
+        doc_types = plasticparser.get_document_types(query_string)
+        self.assertEqual(doc_types, ['help'])
+
+
 if __name__ == '__main__':
     unittest.main()

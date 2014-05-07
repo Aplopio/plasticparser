@@ -21,3 +21,8 @@ def get_query_dsl(query_string):
             }
         }
     }
+
+def get_document_types(query_string):
+    tokens = tokenizer.tokenize(query_string)
+    filters = entities.Filters(tokens)
+    return [filters.get_type_filter().value] if filters.has_type_filter() else []
