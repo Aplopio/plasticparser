@@ -10,8 +10,8 @@ class EntitiesTest(unittest.TestCase):
         tokens = [[],[['title', ':', 'abc def'], ['description', ':', 'def']]]
         filters = entities.Filters(tokens)
         self.assertEqual(len(filters.items), 2)
-        self.assertEqual(filters.items[0].get_query(), {"term": {"title": "abc def"}})
-        self.assertEqual(filters.items[1].get_query(), {"term": {"description": "def"}})
+        self.assertEqual(filters.items[0].get_query(), {"match": {"title": "abc def"}})
+        self.assertEqual(filters.items[1].get_query(), {"match": {"description": "def"}})
 
     def test_should_sanitize_special_characters_in_terms(self):
         for char in Filter.RESERVED_CHARS:
@@ -24,8 +24,8 @@ class EntitiesTest(unittest.TestCase):
         filters = entities.Filters(tokens)
         self.assertEqual(len(filters.items), 3)
         self.assertEqual(filters.items[0].get_query(), {"type": {"value": "help"}})
-        self.assertEqual(filters.items[1].get_query(), {"term": {"title": "abc def"}})
-        self.assertEqual(filters.items[2].get_query(), {"term": {"description": "def"}})
+        self.assertEqual(filters.items[1].get_query(), {"match": {"title": "abc def"}})
+        self.assertEqual(filters.items[2].get_query(), {"match": {"description": "def"}})
 
 
 if __name__ == '__main__':

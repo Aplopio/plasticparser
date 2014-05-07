@@ -11,15 +11,16 @@ class PlasticParserTestCase(unittest.TestCase):
         expected_query_dsl = {
             "query": {
                 "filtered": {
+                    "query": [
+                        {
+                            "match": {"title": "hello"}
+                        },
+                        {
+                            "match": {"description": "world"}
+                        }
+                    ],
                     "filter": {
-                        "or": [
-                            {
-                                "term": {"title": "hello"}
-                            },
-                            {
-                                "term": {"description": "world"}
-                            },
-                        ]
+
                     }
                 }
             }
@@ -32,19 +33,19 @@ class PlasticParserTestCase(unittest.TestCase):
         expected_query_dsl = {
             "query": {
                 "filtered": {
+                    "query": [
+                        {
+                            "match": {"title": "hello"}
+                        },
+                        {
+                            "match": {"description": "world"}
+                        }
+                    ],
                     "filter": {
                         "and": [
                             {
                                 "type": {"value": "help"}
                             }
-                        ],
-                        "or": [
-                            {
-                                "term": {"title": "hello"}
-                            },
-                            {
-                                "term": {"description": "world"}
-                            },
                         ]
                     }
                 }

@@ -8,7 +8,7 @@ class Filter(object):
 
     def get_query(self):
         return {
-            "term": {
+            "match": {
                 self.key: self.value
             }
         }
