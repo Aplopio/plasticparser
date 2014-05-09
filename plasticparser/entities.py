@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 class Filter(object):
+    RESERVED_CHARS = ['\\', '+', '-', '&&',
+                      '||', '!', '(', ')',
+                      '{', '}', '[', ']',
+                      '^', '"', '~', '*',
+                      '?', ':', '/']
+
     def __init__(self, token):
         self.token = token
         self.key = token[0]
@@ -12,12 +18,6 @@ class Filter(object):
                 self.key: self.value
             }
         }
-
-    RESERVED_CHARS = ['\\', '+', '-', '&&',
-                      '||', '!', '(', ')',
-                      '{', '}', '[', ']',
-                      '^', '"', '~', '*',
-                      '?', ':', '/']
 
     def _sanitize(self, string):
         for char in Filter.RESERVED_CHARS:
