@@ -5,6 +5,15 @@ from plasticparser import tokenizer
 
 
 class TokenizerTestCase(unittest.TestCase):
+    def test_should_remove_newline_chars(self):
+        query_string = '''
+        title:"abc
+
+        def"
+        '''
+        tokens = tokenizer.tokenize(query_string)
+        self.assertEqual(tokens, [[], [['title', ':', 'abc        def']]])
+
     def test_should_tokenize_simple_string(self):
         tokens = tokenizer.tokenize('title:abc')
         self.assertEqual(tokens, [[], [['title', ':', 'abc']]])
@@ -24,6 +33,9 @@ class TokenizerTestCase(unittest.TestCase):
     def test_should_tokenize_simple_multiple_terms(self):
         tokens = tokenizer.tokenize('title:"abc def" description:def')
         self.assertEqual(tokens, [[], [['title', ':', 'abc def'], ['description', ':', 'def']]])
+
+
+
 
 
 if __name__ == '__main__':
