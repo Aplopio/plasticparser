@@ -3,25 +3,16 @@
 from . import entities, tokenizer
 
 
-def _construct_query(filters):
-    return [_filter.get_query() for _filter in filters.get_term_filters()]
-
-
-def _construct_filtered_query(filters):
-    query_dsl = {}
-    if filters.has_type_filter():
-        query_dsl['and'] = [filters.get_type_filter().get_query()]
-    return query_dsl
-
-
 def get_query_dsl(query_string):
     tokens = tokenizer.tokenize(query_string)
-    filters = entities.Filters(tokens)
+    query = entities.Query(tokens[1])
+    filter_tokens = [tokens[0]] if tokens[0] else []
+    filters = entities.Filters(filter_tokens)
     return {
         "query": {
             "filtered": {
-                "query": _construct_query(filters),
-                "filter": _construct_filtered_query(filters)
+                "query":  query.get_query(),
+                "filter": filters.get_query()
             }
         }
     }
@@ -29,5 +20,5 @@ def get_query_dsl(query_string):
 
 def get_document_types(query_string):
     tokens = tokenizer.tokenize(query_string)
-    filters = entities.Filters(tokens)
-    return [filters.get_type_filter().value] if filters.has_type_filter() else []
+    filters = entities.Filters([tokens[0]])
+    return [filters.get_type_filters()[0].value] if filters.has_type_filter() else []

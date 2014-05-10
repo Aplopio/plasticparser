@@ -14,7 +14,7 @@ class Filter(object):
 
     def get_query(self):
         return {
-            "match": {
+            "term": {
                 self.key: self.value
             }
         }
@@ -35,18 +35,57 @@ class TypeFilter(Filter):
 
 
 class Filters(object):
-    def __init__(self, tokens):
-        self.items = [Filter(token) for token in tokens[1] if token]
-        if tokens[0]:
-            type_filter = TypeFilter(tokens[0])
-            self.items.insert(0, type_filter)
+    def __init__(self, tokens_list):
+        self.filter_list = [TypeFilter(tokens) if tokens[0] == 'type'
+                            else Filter(tokens)
+                            for tokens in tokens_list] if tokens_list else []
 
     def has_type_filter(self):
-        return isinstance(self.items[0], TypeFilter)
+        return any(isinstance(filter_element, TypeFilter) for filter_element in self.filter_list)
 
-    def get_type_filter(self):
-        return self.items[0]
+    def get_type_filters(self):
+        return [filter_element
+                for filter_element in self.filter_list
+                if isinstance(filter_element, TypeFilter)]
 
     def get_term_filters(self):
-        return self.items[1:] if self.has_type_filter() else self.items
+        return [filter_element for filter_element in self.filter_list
+                if isinstance(filter_element, TypeFilter)]
+
+    def get_query(self):
+        if self.filter_list:
+            return {
+                'and': [filter_element.get_query()
+                        for filter_element in self.filter_list]
+            }
+        return {}
+
+
+def _construct_filtered_query(self, filters):
+    query_dsl = {}
+    if filters.has_type_filter():
+        query_dsl['and'] = [filters.get_type_filters().get_query()]
+    return query_dsl
+
+
+class MatchClause(object):
+    def __init__(self, token_list):
+        self.key = token_list[0]
+        self.operator = token_list[1]
+        self.value = token_list[2]
+
+    def get_query(self):
+        return {
+            "match": {
+                self.key: self.value
+            }
+        }
+
+
+class Query(object):
+    def __init__(self, token_lists):
+        self.match_clauses = [MatchClause(token_list) for token_list in token_lists]
+
+    def get_query(self):
+        return [match_clause.get_query() for match_clause in self.match_clauses]
 
