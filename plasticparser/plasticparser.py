@@ -21,4 +21,4 @@ def get_query_dsl(query_string):
 def get_document_types(query_string):
     tokens = tokenizer.tokenize(query_string)
     filters = entities.Filters([tokens[0]])
-    return [filters.get_type_filters()[0].value] if filters.has_type_filter() else []
+    return [filters.get_type_filters()[0].value] if filters.has_type_filters() else []
