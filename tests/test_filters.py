@@ -30,6 +30,10 @@ class FilterTest(unittest.TestCase):
             term = Filter(['title', ':', 'abc def' + char])
             self.assertEqual(term.value, "abc def\\" + char)
 
+    def test_should_not_sanitize_if_value_is_not_string(self):
+        term = Filter(['client_id', ':', 1])
+        self.assertEqual(term.value, 1)
+
 
 class FiltersTest(unittest.TestCase):
     def test_should_get_query_for_both_type_and_term_filters(self):
@@ -51,21 +55,28 @@ class FiltersTest(unittest.TestCase):
         self.assertEqual(filters.get_query(), expected_query)
 
     def test_should_get_only_term_filters(self):
-        filter_tokens = [['client_id', ':', '1']]
+        filter_tokens = [['client_id', ':', '1'], ['user_id', ':', 2]]
         expected_query = {
             "and": [
                 {
                     "term": {
-                        "client_id": '1'}
+                        "client_id": "1"
+                    }
+                },
+                {
+                    "term": {
+                        "user_id": 2
+                    }
                 }
             ]
         }
 
         filters = Filters(filter_tokens)
+        query = filters.get_query()
 
         self.assertEqual(filters.has_type_filters(), False)
         self.assertEqual(filters.has_term_filters(), True)
-        self.assertEqual(filters.get_query(), expected_query)
+        self.assertEqual(query, expected_query)
 
     def test_should_get_query_when_token_list_is_empty(self):
         filter_tokens = []

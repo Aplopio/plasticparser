@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-import json
+
+
+def _sanitize_term_value(value):
+    if not isinstance(value, str):
+        return value
+    for char in Filter.RESERVED_CHARS:
+        value = value.replace(char, u'\{}'.format(char))
+    return value
 
 
 class Filter(object):
@@ -13,7 +20,7 @@ class Filter(object):
         self.token = tokens
         self.key = tokens[0]
         self.operator = tokens[1]
-        self.value = self._sanitize(tokens[2])
+        self.value = _sanitize_term_value(tokens[2])
 
     def get_query(self):
         return {
@@ -21,11 +28,6 @@ class Filter(object):
                 self.key: self.value
             }
         }
-
-    def _sanitize(self, string):
-        for char in Filter.RESERVED_CHARS:
-            string = string.replace(char, u'\{}'.format(char))
-        return string
 
 
 class TypeFilter(Filter):
@@ -95,6 +97,22 @@ class Query(object):
             "query_string": {
                 "query": " OR ".join(match_queries)
 
+            }
+        }
+
+
+class Expression(object):
+    def __init__(self, query, filters):
+        self.filters = filters
+        self.query = query
+
+    def get_query(self):
+        return {
+            "query": {
+                "filtered": {
+                    "query": self.query.get_query(),
+                    "filter": self.filters.get_query()
+                }
             }
         }
 

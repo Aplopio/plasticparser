@@ -25,7 +25,6 @@ class PlasticParserTestCase(unittest.TestCase):
 
     def test_should_return_elastic_search_query_dsl_for_basic_query_with_type(self):
         query_string = 'type:help title:hello description:"world"'
-        elastic_query_dsl = plasticparser.get_query_dsl(query_string)
         expected_query_dsl = {
             "query": {
                 "filtered": {
@@ -44,55 +43,41 @@ class PlasticParserTestCase(unittest.TestCase):
                 }
             }
         }
+
+        elastic_query_dsl = plasticparser.get_query_dsl(query_string)
+
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
+    def test_should_return_elastic_search_query_dsl_for_basic_query_with_global_filters(self):
+        query_string = 'type:help title:hello description:"world"'
+        global_filters = [{"client_id": 1}, {"user_id": 2}]
+        expected_query_dsl = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": "title:hello OR description:world"
+                        }
+                    },
+                    "filter": {
+                        "and": [
+                            {
+                                "term": {"client_id": 1}
+                            },
+                            {
+                                "term": {"user_id": 2}
+                            },
+                            {
+                                "type": {"value": "help"}
+                            },
+                        ]
+                    }
+                }
+            }
+        }
+        elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
 
-
-        # def test_should_return_elastic_search_query_dsl_for_simple_search(self):
-        #     query_string = 'title:hello AND description:world'
-        #     elastic_query_dsl = get_query_dsl(query_string)
-        #     expected_query_dsl = {
-        #         "query": {
-        #             "filtered": {
-        #                 "filter": {
-        #                     "and": [
-        #                         {
-        #                             "term": {"title": "hello"}
-        #                         },
-        #                         {
-        #                             "term": {"description": "world"}
-        #                         }
-        #                     ]
-        #                 }
-        #             }
-        #         }
-        #     }
-        #     self.assertEqual(elastic_query_dsl, expected_query_dsl)
-        #
-        #
-        # def test_should_return_elastic_search_query_dsl_for_simple_and_or_search(self):
-        #     query_string = 'title:hello AND description:world OR title:abc'
-        #     elastic_query_dsl = get_query_dsl(query_string)
-        #     expected_query_dsl = {
-        #         "query": {
-        #             "filtered": {
-        #                 "filter": {
-        #                     "and": [
-        #                         {
-        #                             "term": {"title": "hello"}
-        #                         },
-        #                         {
-        #                             "term": {"description": "world"}
-        #                         }
-        #                     ],
-        #                     "or": {
-        #                             "term": {"title": "abc"}
-        #                     }
-        #                 }
-        #             }
-        #         }
-        #     }
-        #     self.assertEqual(elastic_query_dsl, expected_query_dsl)
+        self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
 
 class GetDocTypesTest(unittest.TestCase):
