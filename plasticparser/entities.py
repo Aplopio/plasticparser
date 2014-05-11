@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import json
+
+
 class Filter(object):
     RESERVED_CHARS = ['\\', '+', '-', '&&',
                       '||', '!', '(', ')',
@@ -75,11 +78,11 @@ class MatchClause(object):
         self.value = token_list[2]
 
     def get_query(self):
-        return {
-            "match": {
-                self.key: self.value
-            }
-        }
+        return "{}{}{}".format(self.key, self.operator, self.value)
+
+
+def query_string(match_clause):
+    return match_clause.get_query()
 
 
 class Query(object):
@@ -87,5 +90,11 @@ class Query(object):
         self.match_clauses = [MatchClause(token_list) for token_list in token_lists]
 
     def get_query(self):
-        return [match_clause.get_query() for match_clause in self.match_clauses]
+        match_queries = map(query_string, self.match_clauses)
+        return {
+            "query_string": {
+                "query": " OR ".join(match_queries)
+
+            }
+        }
 
