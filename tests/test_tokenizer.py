@@ -22,6 +22,14 @@ class TokenizerTestCase(unittest.TestCase):
         tokens = tokenizer.tokenize('type:help title:abc description:xyz')
         self.assertEqual(tokens, [['type', ':', 'help'], [['title', ':', 'abc'], ['description', ':', 'xyz']]])
 
+    def test_should_tokenize_simple_string_with_equality_operators(self):
+        tokens = tokenizer.tokenize('due_date:<1234 valid_until:>1234 use_by:>=1234 expiry_date:<=1234')
+        expected_tokens = [[], [['due_date', ':<', '1234'],
+                                ['valid_until', ':>', '1234'],
+                                ['use_by', ':>=', '1234'],
+                                ['expiry_date', ':<=', '1234']]]
+        self.assertEqual(tokens, expected_tokens)
+
     def test_should_tokenize_simple_quoted_string(self):
         tokens = tokenizer.tokenize('title:"abc def"')
         self.assertEqual(tokens, [[], [['title', ':', 'abc def']]])
@@ -37,9 +45,6 @@ class TokenizerTestCase(unittest.TestCase):
     def test_should_tokenize_simple_multiple_terms(self):
         tokens = tokenizer.tokenize('title:"abc def" description:def')
         self.assertEqual(tokens, [[], [['title', ':', 'abc def'], ['description', ':', 'def']]])
-
-
-
 
 
 if __name__ == '__main__':
