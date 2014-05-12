@@ -1,5 +1,5 @@
 import unittest
-from plasticparser.entities import Filter, Filters, TypeFilter
+from plasticparser.entities import Filter, Filters, TypeFilter, RESERVED_CHARS
 
 
 class FilterTest(unittest.TestCase):
@@ -26,7 +26,7 @@ class FilterTest(unittest.TestCase):
         self.assertEqual(query, expected_query)
 
     def test_should_sanitize_special_characters_in_terms(self):
-        for char in Filter.RESERVED_CHARS:
+        for char in RESERVED_CHARS:
             term = Filter(['title', ':', 'abc def' + char])
             self.assertEqual(term.value, "abc def\\" + char)
 

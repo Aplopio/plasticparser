@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
+RESERVED_CHARS = ['\\', '+', '-', '&&',
+                      '||', '!', '(', ')',
+                      '{', '}', '[', ']',
+                      '^', '"', '~', '*',
+                      '?', ':', '/']
 
 
 def _sanitize_term_value(value):
     if not isinstance(value, str):
         return value
-    for char in Filter.RESERVED_CHARS:
+    for char in RESERVED_CHARS:
         value = value.replace(char, u'\{}'.format(char))
     return value
 
 
 class Filter(object):
-    RESERVED_CHARS = ['\\', '+', '-', '&&',
-                      '||', '!', '(', ')',
-                      '{', '}', '[', ']',
-                      '^', '"', '~', '*',
-                      '?', ':', '/']
 
     def __init__(self, tokens):
         self.token = tokens
@@ -77,7 +77,7 @@ class MatchClause(object):
     def __init__(self, token_list):
         self.key = token_list[0]
         self.operator = token_list[1]
-        self.value = token_list[2]
+        self.value = _sanitize_term_value(token_list[2])
 
     def get_query(self):
         return "{}{}{}".format(self.key, self.operator, self.value)
