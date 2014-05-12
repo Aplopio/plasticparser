@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, Literal, alphas, QuotedString, Group, ZeroOrMore, Optional, OneOrMore
+from pyparsing import Word, Literal, alphas, QuotedString, Group, ZeroOrMore, Optional, OneOrMore, srange
 
 
 def get_grammar():
-    word = Word(alphas)
+    word = Word(srange("[a-zA-Z0-9_]"))
     exact = QuotedString('"', unquoteResults=True, escChar='\\')
     term = exact | word
     comparison_term = word + Literal(':') + term

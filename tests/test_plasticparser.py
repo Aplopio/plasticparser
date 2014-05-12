@@ -23,6 +23,31 @@ class PlasticParserTestCase(unittest.TestCase):
         }
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
+    def test_should_return_elastic_search_query_dsl_for_basic_query_with_number_and_underscore_in_field(self):
+        query_string = 'type:help due_date:1234456'
+        expected_query_dsl = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": "due_date:1234456"
+                        }
+                    },
+                    "filter": {
+                        "and": [
+                            {
+                                "type": {"value": "help"}
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
+        elastic_query_dsl = plasticparser.get_query_dsl(query_string)
+
+        self.assertEqual(elastic_query_dsl, expected_query_dsl)
+
     def test_should_return_elastic_search_query_dsl_for_basic_query_with_type(self):
         query_string = 'type:help title:hello description:"world"'
         expected_query_dsl = {
