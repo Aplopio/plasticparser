@@ -7,7 +7,7 @@ RESERVED_CHARS = ['\\', '+', '-', '&&',
 
 
 def _sanitize_term_value(value):
-    if not isinstance(value, str):
+    if not isinstance(value, basestring):
         return value
     for char in RESERVED_CHARS:
         value = value.replace(char, u'\{}'.format(char))
