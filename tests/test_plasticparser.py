@@ -44,6 +44,27 @@ class PlasticParserTestCase(unittest.TestCase):
             }
         }
 
+    def test_should_return_elastic_search_query_dsl_for_queries_with_comparision_operators(self):
+        query_string = 'type:help due_date<1234 due_date>1234 due_date<=1234 due_date>=1234'
+        expected_query_dsl = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": "due_date:<1234 OR due_date:>1234 OR due_date:<=1234 OR due_date:>=1234"
+                        }
+                    },
+                    "filter": {
+                        "and": [
+                            {
+                                "type": {"value": "help"}
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
 
         self.assertEqual(elastic_query_dsl, expected_query_dsl)

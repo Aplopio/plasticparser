@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-RESERVED_CHARS = ['\\', '+', '-', '&&',
-                      '||', '!', '(', ')',
-                      '{', '}', '[', ']',
-                      '^', '"', '~', '*',
-                      '?', ':', '/']
+RESERVED_CHARS = ('\\', '+', '-', '&&',
+                  '||', '!', '(', ')',
+                  '{', '}', '[', ']',
+                  '^', '"', '~', '*',
+                  '?', ':', '/')
+COMPARISON_OPERATORS = ('>', '<', '<=', '>=')
 
 
 def _sanitize_term_value(value):
@@ -14,8 +15,11 @@ def _sanitize_term_value(value):
     return value
 
 
-class Filter(object):
+def _translate_operator(operator):
+    return ':' + operator if operator in COMPARISON_OPERATORS else operator
 
+
+class Filter(object):
     def __init__(self, tokens):
         self.token = tokens
         self.key = tokens[0]
@@ -76,7 +80,7 @@ class Filters(object):
 class MatchClause(object):
     def __init__(self, token_list):
         self.key = token_list[0]
-        self.operator = token_list[1]
+        self.operator = _translate_operator(token_list[1])
         self.value = _sanitize_term_value(token_list[2])
 
     def get_query(self):

@@ -7,7 +7,7 @@ def get_grammar():
     word = Word(srange("[a-zA-Z0-9_]"))
     exact = QuotedString('"', unquoteResults=True, escChar='\\')
     term = exact | word
-    operator = oneOf(': :< :> :<= :>=')
+    operator = oneOf(': < > <= >=')
     comparison_term = word + operator + term
     type_term = Literal("type") + operator + Word(alphas)
     query_group = Group(Optional(type_term)) + Group(OneOrMore(Group(comparison_term)))

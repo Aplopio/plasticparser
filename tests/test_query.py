@@ -2,7 +2,7 @@
 
 import unittest
 
-from plasticparser.entities import Query, RESERVED_CHARS, MatchClause
+from plasticparser.entities import Query, RESERVED_CHARS, MatchClause, COMPARISON_OPERATORS
 
 
 class QueryTest(unittest.TestCase):
@@ -24,6 +24,12 @@ class MatchClauseTest(unittest.TestCase):
         for char in RESERVED_CHARS:
             match_clause = MatchClause(['title', ':', 'abc def' + char])
             self.assertEqual(match_clause.value, "abc def\\" + char)
+
+    def test_should_replace_comparision_operators(self):
+        for operator in COMPARISON_OPERATORS:
+            match_clause = MatchClause(['foo', operator, 'bar'])
+            self.assertEqual(match_clause.operator, ':'+operator)
+
 
 
 if __name__ == '__main__':
