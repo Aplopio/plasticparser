@@ -4,6 +4,7 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '{', '}', '[', ']',
                   '^', '"', '~', '*',
                   '?', '/')
+ESCAPE_CHARS = ['"']
 COMPARISON_OPERATORS = ('>', '<', '<=', '>=')
 
 
@@ -11,6 +12,12 @@ def _sanitize_term_value(value):
     if not isinstance(value, basestring):
         return value
     for char in RESERVED_CHARS:
+        value = value.replace(char, u'\{}'.format(char))
+    return value
+
+
+def _escpe_chars(value):
+    for char in ESCAPE_CHARS:
         value = value.replace(char, u'\{}'.format(char))
     return value
 
@@ -93,7 +100,7 @@ def query_string(match_clause):
 
 class Query(object):
     def __init__(self, query):
-        self.query = _sanitize_term_value(query)
+        self.query = _escpe_chars(query)
 
     def get_query(self):
         return {
