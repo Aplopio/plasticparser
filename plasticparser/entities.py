@@ -92,14 +92,13 @@ def query_string(match_clause):
 
 
 class Query(object):
-    def __init__(self, token_lists):
-        self.match_clauses = [MatchClause(token_list) for token_list in token_lists]
+    def __init__(self, query):
+        self.query = query
 
     def get_query(self):
-        match_queries = map(query_string, self.match_clauses)
         return {
             "query_string": {
-                "query": " OR ".join(match_queries)
+                "query": self.query
 
             }
         }

@@ -7,7 +7,7 @@ from plasticparser.entities import Query, RESERVED_CHARS, MatchClause, COMPARISO
 
 class QueryTest(unittest.TestCase):
     def test_should_construct_query_from_tokens(self):
-        tokens = [['title', ':', 'abc def'], ['description', ':', 'def']]
+        tokens = 'title:abc def OR description:def'
         expected_query = {
             "query_string": {
                 "query": "title:abc def OR description:def"

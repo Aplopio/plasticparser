@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, Literal, alphas, QuotedString, Group, ZeroOrMore, Optional, OneOrMore, srange, oneOf
+from pyparsing import Word, Literal, alphas, Group, Optional
 
 
 def get_grammar():
-    word = Word(srange("[a-zA-Z0-9_]"))
-    exact = QuotedString('"', unquoteResults=True, escChar='\\')
-    term = exact | word
-    operator = oneOf(': < > <= >=')
-    comparison_term = word + operator + term
-    type_term = Literal("type") + operator + Word(alphas)
-    query_group = Group(Optional(type_term)) + Group(OneOrMore(Group(comparison_term)))
+    unicode_printables = u''.join(unichr(c) for c in xrange(65536))
+    type_term = Literal("type") + ':' + Word(alphas)
+    query_group = Group(Optional(type_term)) + Group(Word(unicode_printables))
     return query_group
 
 

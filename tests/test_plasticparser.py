@@ -6,14 +6,14 @@ from plasticparser import plasticparser
 
 class PlasticParserTestCase(unittest.TestCase):
     def test_should_return_elastic_search_query_dsl_for_basic_query(self):
-        query_string = 'title:hello description:"world"'
+        query_string = 'title:hello OR description:"world"'
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
         expected_query_dsl = {
             "query": {
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello OR description:world'}
+                            "query": 'title:hello OR description:"world"'}
                     },
                     "filter": {
 
@@ -51,7 +51,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "due_date:<1234 OR due_date:>1234 OR due_date:<=1234 OR due_date:>=1234"
+                            "query": "due_date<1234 due_date>1234 due_date<=1234 due_date>=1234"
                         }
                     },
                     "filter": {
@@ -64,7 +64,6 @@ class PlasticParserTestCase(unittest.TestCase):
                 }
             }
         }
-
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
 
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
@@ -76,7 +75,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "title:hello OR description:world"
+                            "query": 'title:hello description:"world"'
                         }
                     },
                     "filter": {
@@ -102,7 +101,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "title:hello OR description:world"
+                            "query": 'title:hello description:"world"'
                         }
                     },
                     "filter": {

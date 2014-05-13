@@ -30,7 +30,7 @@ def get_query_dsl(query_string, global_filters=None):
      It is translated into an elastic search term filter.
     """
     tokens = tokenizer.tokenize(query_string)
-    query_tokens = tokens[1]
+    query_tokens = tokens[1][0]
     filter_tokens = _get_filter_tokens(tokens[0], global_filters)
     expression = Expression(query=(Query(query_tokens)),
                             filters=(Filters(filter_tokens)))
