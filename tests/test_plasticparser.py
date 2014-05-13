@@ -13,7 +13,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello OR description:"world"'}
+                            "query": 'title:hello OR description:\\"world\\"'}
                     },
                     "filter": {
 
@@ -75,7 +75,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello description:"world"'
+                            "query": 'title:hello description:\\"world\\"'
                         }
                     },
                     "filter": {
@@ -101,7 +101,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello description:"world"'
+                            "query": 'title:hello description:\\"world\\"'
                         }
                     },
                     "filter": {
@@ -121,8 +121,8 @@ class PlasticParserTestCase(unittest.TestCase):
             }
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
-
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
+
 
 
 class GetDocTypesTest(unittest.TestCase):

@@ -3,7 +3,7 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
                   '{', '}', '[', ']',
                   '^', '"', '~', '*',
-                  '?', ':', '/')
+                  '?', '/')
 COMPARISON_OPERATORS = ('>', '<', '<=', '>=')
 
 
@@ -93,7 +93,7 @@ def query_string(match_clause):
 
 class Query(object):
     def __init__(self, query):
-        self.query = query
+        self.query = _sanitize_term_value(query)
 
     def get_query(self):
         return {
