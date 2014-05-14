@@ -2,7 +2,8 @@
 
 import unittest
 
-from plasticparser.entities import Query, RESERVED_CHARS, MatchClause, COMPARISON_OPERATORS
+from plasticparser.entities import Query, RESERVED_CHARS, MatchClause, \
+    COMPARISON_OPERATORS
 
 
 class QueryTest(unittest.TestCase):

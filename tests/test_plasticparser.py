@@ -45,13 +45,13 @@ class PlasticParserTestCase(unittest.TestCase):
         }
 
     def test_should_return_elastic_search_query_dsl_for_queries_with_comparision_operators(self):
-        query_string = 'type:help due_date<1234 due_date>1234 due_date<=1234 due_date>=1234'
+        query_string = 'type:help due_date<1234 due_date>1234 due_date<=1234 (due_date>=1234)'
         expected_query_dsl = {
             "query": {
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "due_date<1234 due_date>1234 due_date<=1234 due_date>=1234"
+                            "query": "due_date<1234 due_date>1234 due_date<=1234 (due_date>=1234)"
                         }
                     },
                     "filter": {

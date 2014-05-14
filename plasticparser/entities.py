@@ -3,8 +3,14 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
                   '{', '}', '[', ']',
                   '^', '"', '~', '*',
-                  '?', '/')
-ESCAPE_CHARS = ['"']
+                  '?', '/', ':')
+
+ESCAPE_CHARS = ('\\', '+', '-', '&&',
+                '||', '!',
+                '{', '}', '[', ']',
+                '^', '"', '~', '*',
+                '?', '/')
+
 COMPARISON_OPERATORS = ('>', '<', '<=', '>=')
 
 
@@ -16,7 +22,9 @@ def _sanitize_term_value(value):
     return value
 
 
-def _escpe_chars(value):
+def _escape_input_query(value):
+    if not isinstance(value, basestring):
+        return value
     for char in ESCAPE_CHARS:
         value = value.replace(char, u'\{}'.format(char))
     return value
@@ -61,10 +69,12 @@ class Filters(object):
                             for tokens in tokens_list] if tokens_list else []
 
     def has_type_filters(self):
-        return any(isinstance(filter_element, TypeFilter) for filter_element in self.filter_list)
+        return any(isinstance(filter_element, TypeFilter) for
+                   filter_element in self.filter_list)
 
     def has_term_filters(self):
-        return any(isinstance(filter_element, TermFilter) for filter_element in self.filter_list)
+        return any(isinstance(filter_element, TermFilter) for
+                   filter_element in self.filter_list)
 
     def get_type_filters(self):
         return [filter_element
@@ -100,7 +110,7 @@ def query_string(match_clause):
 
 class Query(object):
     def __init__(self, query):
-        self.query = _escpe_chars(query)
+        self.query = _escape_input_query(query)
 
     def get_query(self):
         return {
