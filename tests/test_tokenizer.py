@@ -19,7 +19,7 @@ class TokenizerTestCase(unittest.TestCase):
         self.assertEqual(tokens, [[], ['title:abc']])
 
     def test_should_tokenize_simple_string_with_type(self):
-        tokens = tokenizer.tokenize('type:help title:abc description:xyz')
+        tokens = tokenizer.tokenize('type:help and title:abc description:xyz')
         self.assertEqual(tokens, [['type', ':', 'help'], ['title:abc description:xyz']])
 
     def test_should_tokenize_simple_string_with_equality_operators(self):
