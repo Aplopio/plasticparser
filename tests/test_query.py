@@ -29,8 +29,7 @@ class MatchClauseTest(unittest.TestCase):
     def test_should_replace_comparision_operators(self):
         for operator in COMPARISON_OPERATORS:
             match_clause = MatchClause(['foo', operator, 'bar'])
-            self.assertEqual(match_clause.operator, ':'+operator)
-
+            self.assertEqual(match_clause.operator, ':' + operator)
 
 
 if __name__ == '__main__':

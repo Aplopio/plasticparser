@@ -11,9 +11,9 @@ def _map_global_filters_to_token_list(global_filters):
 
 def _get_filter_tokens(type_filter_tokens, global_filters=None):
     global_filters = global_filters if global_filters else []
-    type_filter_tokens = [type_filter_tokens] if type_filter_tokens else []
-    global_filter_tokens = _map_global_filters_to_token_list(global_filters)
-    return global_filter_tokens + type_filter_tokens
+    type_filter_tokens = [{token[0]: token[2]} for token in [type_filter_tokens]] if type_filter_tokens else []
+    global_filter_tokens = global_filters
+    return global_filter_tokens, type_filter_tokens
 
 
 def get_query_dsl(query_string, global_filters=None):
@@ -31,9 +31,9 @@ def get_query_dsl(query_string, global_filters=None):
     """
     tokens = tokenizer.tokenize(query_string)
     query_tokens = tokens[1][0]
-    filter_tokens = _get_filter_tokens(tokens[0], global_filters)
+    filter_tokens, type_filter_tokens = _get_filter_tokens(tokens[0], global_filters)
     expression = Expression(query=(Query(query_tokens)),
-                            filters=(Filters(filter_tokens)))
+                            filters=(Filters(filter_tokens, type_filter_tokens)))
     return expression.get_query()
 
 
@@ -45,5 +45,5 @@ def get_document_types(query_string):
      where type corresponds to an elastic search document type
     """
     tokens = tokenizer.tokenize(query_string)
-    filters = entities.Filters(_get_filter_tokens(tokens[0]))
-    return [filters.get_type_filters()[0].value] if filters.has_type_filters() else []
+    filter_tokens, type_filter_tokens = _get_filter_tokens(tokens[0])
+    return [token['type'] for token in type_filter_tokens]

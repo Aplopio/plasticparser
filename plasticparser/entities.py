@@ -35,11 +35,9 @@ def _translate_operator(operator):
 
 
 class Filter(object):
-    def __init__(self, tokens):
-        self.token = tokens
-        self.key = tokens[0]
-        self.operator = tokens[1]
-        self.value = _sanitize_term_value(tokens[2])
+    def __init__(self, key, value):
+        self.key = key
+        self.value = _sanitize_term_value(value)
 
     def get_query(self):
         return {
@@ -63,35 +61,25 @@ class TermFilter(Filter):
 
 
 class Filters(object):
-    def __init__(self, tokens_list):
-        self.filter_list = [TypeFilter(tokens) if tokens[0] == 'type'
-                            else TermFilter(tokens)
-                            for tokens in tokens_list] if tokens_list else []
+    def __init__(self, token_list, type_filters):
+        self.token_list = token_list
+        self.type_filters = type_filters
 
-    def has_type_filters(self):
-        return any(isinstance(filter_element, TypeFilter) for
-                   filter_element in self.filter_list)
+    def _get_logical_query(self, logical_type):
+        filter_list = []
+        if self.token_list:
+            filter_list = [Filter(*token.popitem()).get_query() for token in self.token_list.get(logical_type, [])]
+        if self.type_filters and logical_type == 'and':
+            filter_list.append(TypeFilter(*self.type_filters[0].popitem()).get_query())
 
-    def has_term_filters(self):
-        return any(isinstance(filter_element, TermFilter) for
-                   filter_element in self.filter_list)
-
-    def get_type_filters(self):
-        return [filter_element
-                for filter_element in self.filter_list
-                if isinstance(filter_element, TypeFilter)]
-
-    def get_term_filters(self):
-        return [filter_element for filter_element in self.filter_list
-                if isinstance(filter_element, TermFilter)]
+        return filter_list
 
     def get_query(self):
-        if self.filter_list:
-            return {
-                'and': [filter_element.get_query()
-                        for filter_element in self.filter_list]
-            }
-        return {}
+        return {
+            'must': self._get_logical_query('and'),
+            'should':  self._get_logical_query('or'),
+            'must_not': self._get_logical_query('not'),
+        }
 
 
 class MatchClause(object):
@@ -131,7 +119,7 @@ class Expression(object):
             "query": {
                 "filtered": {
                     "query": self.query.get_query(),
-                    "filter": self.filters.get_query()
+                    "filter":{"bool": self.filters.get_query()}
                 }
             }
         }

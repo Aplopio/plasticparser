@@ -1,5 +1,5 @@
 import unittest
-from plasticparser.entities import Filter, Filters, TypeFilter, RESERVED_CHARS
+from plasticparser.entities import Filters, TypeFilter, Filter, RESERVED_CHARS
 
 
 class FilterTest(unittest.TestCase):
@@ -10,7 +10,7 @@ class FilterTest(unittest.TestCase):
             }
         }
 
-        query = TypeFilter(['type', ':', 'help']).get_query()
+        query = TypeFilter('type', 'help').get_query()
 
         self.assertEqual(query, expected_query)
 
@@ -21,72 +21,70 @@ class FilterTest(unittest.TestCase):
             }
         }
 
-        query = Filter(['desc', ':', 'help']).get_query()
+        query = Filter('desc', 'help').get_query()
 
         self.assertEqual(query, expected_query)
 
     def test_should_sanitize_special_characters_in_terms(self):
         for char in RESERVED_CHARS:
-            term = Filter(['title', ':', 'abc def' + char])
+            term = Filter('title', 'abc def' + char)
             self.assertEqual(term.value, "abc def\\" + char)
 
     def test_should_not_sanitize_if_value_is_not_string(self):
-        term = Filter(['client_id', ':', 1])
+        term = Filter('client_id', 1)
         self.assertEqual(term.value, 1)
 
 
 class FiltersTest(unittest.TestCase):
-    def test_should_get_query_for_both_type_and_term_filters(self):
-        filter_tokens = [['type', ':', 'help'], ['client_id', ':', '1']]
-        expected_query = {
-            "and": [
-                {
-                    "type": {"value": "help"}
-                },
-                {
-                    "term": {"client_id": "1"}
-                }
-            ]
+    def test_should_give_final_filter(self):
+        token_list = {
+            'and': [{'client_id': 1}, {'user_id': 2}],
+            'or': [{'ass_id': 22}, {'kass_id': 44}],
+            'not': [{'ff_id': 33}]
         }
+        type_filters = [{'type': 'help'}]
 
-        filters = Filters(filter_tokens)
-        self.assertEqual(filters.has_type_filters(), True)
-        self.assertEqual(filters.has_term_filters(), True)
-        self.assertEqual(filters.get_query(), expected_query)
-
-    def test_should_get_only_term_filters(self):
-        filter_tokens = [['client_id', ':', '1'], ['user_id', ':', 2]]
+        filters = Filters(token_list, type_filters)
+        query = filters.get_query()
         expected_query = {
-            "and": [
+            "must": [
                 {
                     "term": {
-                        "client_id": "1"
+                        "client_id": 1
                     }
                 },
                 {
                     "term": {
                         "user_id": 2
                     }
+                },
+                {
+                    "type": {
+                        "value": u"help"
+                    }
                 }
+            ],
+            "should": [
+                {
+                    "term": {
+                        "ass_id": 22
+                    }
+                },
+                {
+                    "term": {
+                        "kass_id": 44
+                    }
+                }
+            ],
+            "must_not": [
+                {
+                    "term": {
+                        "ff_id": 33
+                    }
+                },
             ]
         }
-
-        filters = Filters(filter_tokens)
-        query = filters.get_query()
-
-        self.assertEqual(filters.has_type_filters(), False)
-        self.assertEqual(filters.has_term_filters(), True)
         self.assertEqual(query, expected_query)
-
-    def test_should_get_query_when_token_list_is_empty(self):
-        filter_tokens = []
-        expected_query = {}
-
-        filters = Filters(filter_tokens)
-
-        self.assertEqual(filters.has_type_filters(), False)
-        self.assertEqual(filters.has_term_filters(), False)
-        self.assertEqual(filters.get_query(), expected_query)
 
 
 if __name__ == '__main__':
