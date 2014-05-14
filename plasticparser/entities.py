@@ -30,10 +30,6 @@ def _escape_input_query(value):
     return value
 
 
-def _translate_operator(operator):
-    return ':' + operator if operator in COMPARISON_OPERATORS else operator
-
-
 class Filter(object):
     def __init__(self, key, value):
         self.key = key
@@ -56,10 +52,6 @@ class TypeFilter(Filter):
         }
 
 
-class TermFilter(Filter):
-    pass
-
-
 class Filters(object):
     def __init__(self, token_list, type_filters):
         self.token_list = token_list
@@ -77,23 +69,9 @@ class Filters(object):
     def get_query(self):
         return {
             'must': self._get_logical_query('and'),
-            'should':  self._get_logical_query('or'),
+            'should': self._get_logical_query('or'),
             'must_not': self._get_logical_query('not'),
         }
-
-
-class MatchClause(object):
-    def __init__(self, token_list):
-        self.key = token_list[0]
-        self.operator = _translate_operator(token_list[1])
-        self.value = _sanitize_term_value(token_list[2])
-
-    def get_query(self):
-        return "{}{}{}".format(self.key, self.operator, self.value)
-
-
-def query_string(match_clause):
-    return match_clause.get_query()
 
 
 class Query(object):
@@ -119,7 +97,7 @@ class Expression(object):
             "query": {
                 "filtered": {
                     "query": self.query.get_query(),
-                    "filter":{"bool": self.filters.get_query()}
+                    "filter": {"bool": self.filters.get_query()}
                 }
             }
         }
