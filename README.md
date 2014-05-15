@@ -15,7 +15,9 @@ global_filters = {
             'not': []
         }
 print plasticparser.get_query_dsl(query_string, global_filters)
+```
 
+```python
 {
     "query": {
         "filtered": {
