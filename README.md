@@ -3,7 +3,8 @@ plasticparser
 
 An Elastic Search Query Parser
 
-```
+
+```python
 from plasticparser import plasticparser
 
 query_string = 'type:help and title:hello description:"world"'
