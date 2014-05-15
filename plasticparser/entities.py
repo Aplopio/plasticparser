@@ -33,11 +33,12 @@ def _escape_input_query(value):
 class Filter(object):
     def __init__(self, key, value):
         self.key = key
-        self.value = _sanitize_term_value(value)
+        self.value = value
 
     def get_query(self):
+        clause = "terms" if isinstance(self.value, list) else "term"
         return {
-            "term": {
+            clause: {
                 self.key: self.value
             }
         }

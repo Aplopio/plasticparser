@@ -25,11 +25,6 @@ class FilterTest(unittest.TestCase):
 
         self.assertEqual(query, expected_query)
 
-    def test_should_sanitize_special_characters_in_terms(self):
-        for char in RESERVED_CHARS:
-            term = Filter('title', 'abc def' + char)
-            self.assertEqual(term.value, "abc def\\" + char)
-
     def test_should_not_sanitize_if_value_is_not_string(self):
         term = Filter('client_id', 1)
         self.assertEqual(term.value, 1)

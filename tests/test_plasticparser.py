@@ -92,7 +92,7 @@ class PlasticParserTestCase(unittest.TestCase):
         global_filters = {
             'and': [{"client_id": 1},
                     {"user_id": 2}],
-            'or': [],
+            'or': [{"assigned_to": ["/api/v1/users/5/"]}],
             'not': []
         }
         expected_query_dsl = {
@@ -114,9 +114,13 @@ class PlasticParserTestCase(unittest.TestCase):
                                 },
                                 {
                                     "type": {"value": "help"}
-                                },
+                                }
                             ],
-                            "should": [],
+                            "should": [
+                                {
+                                    "terms": {"assigned_to": ["/api/v1/users/5/"]}
+                                }
+                            ],
                             "must_not": []
                         }
                     }
