@@ -1,5 +1,6 @@
 import unittest
-from plasticparser.entities import Filters, TypeFilter, Filter, RESERVED_CHARS
+
+from plasticparser.entities import Filters, TypeFilter, Filter, GlobalFilters, BooleanFilter
 
 
 class FilterTest(unittest.TestCase):
@@ -82,5 +83,29 @@ class FiltersTest(unittest.TestCase):
         self.assertEqual(query, expected_query)
 
 
-if __name__ == '__main__':
-    unittest.main()
+class GlobalFiltersTest(unittest.TestCase):
+    def test_should_create_global_filters(self):
+        expected_filters = [BooleanFilter('and',
+                                          [Filter('client_id', 1), Filter('user_id', 2)]),
+                            BooleanFilter('or',
+                                          [Filter('assigned_to', ["/api/v1/users/5/"])]),
+                            BooleanFilter('not', [])]
+        global_filter_dict = {
+            'and': [{"client_id": 1},
+                    {"user_id": 2}],
+            'or': [{"assigned_to": ["/api/v1/users/5/"]}],
+            'not': []
+        }
+        global_filters = GlobalFilters(global_filter_dict)
+        filters = global_filters.filters
+        self.assertEqual(len(filters), len(expected_filters))
+        for fltr in filters:
+            self.assertTrue(fltr in expected_filters)
+
+
+class BooleanFilterTest(unittest.TestCase):
+    def test_should_get_query_for_and_filter(self):
+        boolean_filter = BooleanFilter('and', [{"client_id": 1}, {"user_id": 2}])
+
+        if __name__ == '__main__':
+            unittest.main()

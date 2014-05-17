@@ -67,14 +67,14 @@ class TypeFilter(Filter):
 
 
 class Filters(Entity):
-    def __init__(self, token_list=None, type_filters=None):
-        self.token_list = token_list
+    def __init__(self, global_filters=None, type_filters=None):
+        self.global_filters = global_filters
         self.type_filters = type_filters if type_filters else []
 
     def _get_logical_query(self, logical_type):
         filter_list = []
-        if self.token_list:
-            filter_list = [Filter(*token.popitem()).get_query() for token in self.token_list.get(logical_type, [])]
+        if self.global_filters:
+            filter_list = [Filter(*token.popitem()).get_query() for token in self.global_filters.get(logical_type, [])]
         if self.type_filters and logical_type == 'and':
             filter_list.append(self.type_filters[0].get_query())
 
@@ -121,4 +121,25 @@ class Expression(Entity):
                 }
             }
         }
+
+
+class BooleanFilter(Entity):
+    def __init__(self, logical_operator, filter_list):
+        self.filter_list = filter_list
+        self.logical_operator = logical_operator
+
+
+class GlobalFilters(Entity):
+    def __init__(self, filter_dict=None):
+        filter_dict = filter_dict if filter_dict else {}
+
+        def _create_filter_list(filter_list):
+            return [Filter(fltr_dict.keys()[0], fltr_dict[fltr_dict.keys()[0]]) for fltr_dict in filter_list]
+
+        self.filters = [
+            BooleanFilter(key, _create_filter_list(filter_dict[key])) for key
+            in filter_dict.keys()]
+
+    def get_query(self):
+        return ''
 
