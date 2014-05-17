@@ -1,19 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from . import entities, tokenizer
-from .entities import Expression, Query, Filters
-
-
-def _map_global_filters_to_token_list(global_filters):
-    return [[glob_filter.keys()[0], ':', glob_filter[glob_filter.keys()[0]]]
-            for glob_filter in global_filters] if global_filters else []
-
-
-def _get_filter_tokens(type_filter_tokens, global_filters=None):
-    global_filters = global_filters if global_filters else []
-    type_filter_tokens = [{token[0]: token[2]} for token in [type_filter_tokens]] if type_filter_tokens else []
-    global_filter_tokens = global_filters
-    return global_filter_tokens, type_filter_tokens
+from . import tokenizer
+from .entities import Expression, Filters
 
 
 def get_query_dsl(query_string, global_filters=None):
@@ -29,11 +16,12 @@ def get_query_dsl(query_string, global_filters=None):
      so that the query can be narrowed down to fewer documents.
      It is translated into an elastic search term filter.
     """
-    tokens = tokenizer.tokenize(query_string)
-    query_tokens = tokens[1][0]
-    filter_tokens, type_filter_tokens = _get_filter_tokens(tokens[0], global_filters)
-    expression = Expression(query=(Query(query_tokens)),
-                            filters=(Filters(filter_tokens, type_filter_tokens)))
+    global_filters = global_filters if global_filters else []
+
+    expression = tokenizer.tokenize(query_string)[0]
+    expression = Expression(query=expression.query,
+                            type_filter=expression.type_filter,
+                            filters=(Filters(global_filters)))
     return expression.get_query()
 
 
@@ -44,6 +32,5 @@ def get_document_types(query_string):
      type: person title:foo AND description:bar
      where type corresponds to an elastic search document type
     """
-    tokens = tokenizer.tokenize(query_string)
-    filter_tokens, type_filter_tokens = _get_filter_tokens(tokens[0])
-    return [token['type'] for token in type_filter_tokens]
+    expression = tokenizer.tokenize(query_string)[0]
+    return [expression.type_filter.value]

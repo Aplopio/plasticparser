@@ -10,7 +10,7 @@ class FilterTest(unittest.TestCase):
             }
         }
 
-        query = TypeFilter('type', 'help').get_query()
+        query = TypeFilter('help').get_query()
 
         self.assertEqual(query, expected_query)
 
@@ -37,7 +37,7 @@ class FiltersTest(unittest.TestCase):
             'or': [{'ass_id': 22}, {'kass_id': 44}],
             'not': [{'ff_id': 33}]
         }
-        type_filters = [{'type': 'help'}]
+        type_filters = [TypeFilter('help')]
 
         filters = Filters(token_list, type_filters)
         query = filters.get_query()
