@@ -10,6 +10,9 @@ def get_grammar():
     return query_group
 
 
+grammar = get_grammar()
+
+
 def tokenize(string):
-    return get_grammar().parseString(string.replace('\n', '').strip(),
+    return grammar.parseString(string.replace('\n', '').strip(),
                                      parseAll=True).asList()
