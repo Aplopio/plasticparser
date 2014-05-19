@@ -37,8 +37,7 @@ class TokenizerTest(unittest.TestCase):
     def test_should_tokenize_simple_string_with_equality_operators(self):
         expected_expression = [Expression(
             None,
-            Query('due_date<1234 valid_until>1234 use_by>=1234 expiry_date<=1234'),
-            [])]
+            Query('due_date<1234 valid_until>1234 use_by>=1234 expiry_date<=1234'))]
 
         expression = tokenizer.tokenize('due_date<1234 valid_until>1234 use_by>=1234 expiry_date<=1234')
 

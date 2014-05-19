@@ -67,24 +67,29 @@ class TypeFilter(Filter):
 
 
 class Filters(Entity):
-    def __init__(self, global_filters=None, type_filters=None):
-        self.global_filters = global_filters
-        self.type_filters = type_filters if type_filters else []
+    def __init__(self, global_filters_dict=None, type_filter=None):
+        global_filters_dict = global_filters_dict if global_filters_dict else {}
 
-    def _get_logical_query(self, logical_type):
-        filter_list = []
-        if self.global_filters:
-            filter_list = [Filter(*token.popitem()).get_query() for token in self.global_filters.get(logical_type, [])]
-        if self.type_filters and logical_type == 'and':
-            filter_list.append(self.type_filters[0].get_query())
+        def _construct_filters_(operator):
+            if not global_filters_dict:
+                return []
+            return [Filter(pair.keys()[0], pair[pair.keys()[0]]) for pair in
+                    global_filters_dict[('%s' % operator)]] \
+                if global_filters_dict.get(operator) else []
 
-        return filter_list
+        self.must_filters = _construct_filters_('and')
+        self.should_filters = _construct_filters_('or')
+        self.not_filters = _construct_filters_('not')
+        if type_filter:
+            self.must_filters.append(type_filter)
 
     def get_query(self):
         return {
-            'must': self._get_logical_query('and'),
-            'should': self._get_logical_query('or'),
-            'must_not': self._get_logical_query('not'),
+            'bool': {
+                'must': [fltr.get_query() for fltr in self.must_filters],
+                'should': [fltr.get_query() for fltr in self.should_filters],
+                'must_not': [fltr.get_query() for fltr in self.not_filters]
+            }
         }
 
 
@@ -105,41 +110,15 @@ class Expression(Entity):
     def __init__(self, type_filter, query, filters=None):
         self.type_filter = type_filter
         self.query = query
-        type_filters = [type_filter] if type_filter else []
-        if filters:
-            filters.type_filters = type_filters
-            self.filters = filters
-        else:
-            self.filters = Filters(type_filters=type_filters) if type_filters else None
+        self.filters = filters
 
     def get_query(self):
         return {
             "query": {
                 "filtered": {
                     "query": self.query.get_query(),
-                    "filter": {"bool": self.filters.get_query()}
+                    "filter": self.filters.get_query()
                 }
             }
         }
-
-
-class BooleanFilter(Entity):
-    def __init__(self, logical_operator, filter_list):
-        self.filter_list = filter_list
-        self.logical_operator = logical_operator
-
-
-class GlobalFilters(Entity):
-    def __init__(self, filter_dict=None):
-        filter_dict = filter_dict if filter_dict else {}
-
-        def _create_filter_list(filter_list):
-            return [Filter(fltr_dict.keys()[0], fltr_dict[fltr_dict.keys()[0]]) for fltr_dict in filter_list]
-
-        self.filters = [
-            BooleanFilter(key, _create_filter_list(filter_dict[key])) for key
-            in filter_dict.keys()]
-
-    def get_query(self):
-        return ''
 

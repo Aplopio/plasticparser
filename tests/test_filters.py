@@ -1,6 +1,6 @@
 import unittest
 
-from plasticparser.entities import Filters, TypeFilter, Filter, GlobalFilters, BooleanFilter
+from plasticparser.entities import TypeFilter, Filter, Filters
 
 
 class FilterTest(unittest.TestCase):
@@ -32,80 +32,76 @@ class FilterTest(unittest.TestCase):
 
 
 class FiltersTest(unittest.TestCase):
-    def test_should_give_final_filter(self):
-        token_list = {
-            'and': [{'client_id': 1}, {'user_id': 2}],
-            'or': [{'ass_id': 22}, {'kass_id': 44}],
-            'not': [{'ff_id': 33}]
-        }
-        type_filters = [TypeFilter('help')]
-
-        filters = Filters(token_list, type_filters)
-        query = filters.get_query()
+    def test_should_create_filters_without_type_filter(self):
+        expected_must_filters = [Filter('client_id', 1), Filter('user_id', 2)]
+        expected_should_filters = [Filter('assigned_to', ['/api/v1/users/5/'])]
+        expected_not_filters = []
         expected_query = {
-            "must": [
-                {
-                    "term": {
-                        "client_id": 1
+            "bool": {
+                "must": [
+                    {
+                        "term": {"client_id": 1}
+                    },
+                    {
+                        "term": {"user_id": 2}
                     }
-                },
-                {
-                    "term": {
-                        "user_id": 2
+                ],
+                "should": [
+                    {
+                        "terms": {"assigned_to": ["/api/v1/users/5/"]}
                     }
-                },
-                {
-                    "type": {
-                        "value": u"help"
-                    }
-                }
-            ],
-            "should": [
-                {
-                    "term": {
-                        "ass_id": 22
-                    }
-                },
-                {
-                    "term": {
-                        "kass_id": 44
-                    }
-                }
-            ],
-            "must_not": [
-                {
-                    "term": {
-                        "ff_id": 33
-                    }
-                },
-            ]
+                ],
+                "must_not": []
+            }
         }
-        self.assertEqual(query, expected_query)
-
-
-class GlobalFiltersTest(unittest.TestCase):
-    def test_should_create_global_filters(self):
-        expected_filters = [BooleanFilter('and',
-                                          [Filter('client_id', 1), Filter('user_id', 2)]),
-                            BooleanFilter('or',
-                                          [Filter('assigned_to', ["/api/v1/users/5/"])]),
-                            BooleanFilter('not', [])]
         global_filter_dict = {
             'and': [{"client_id": 1},
                     {"user_id": 2}],
             'or': [{"assigned_to": ["/api/v1/users/5/"]}],
             'not': []
         }
-        global_filters = GlobalFilters(global_filter_dict)
-        filters = global_filters.filters
-        self.assertEqual(len(filters), len(expected_filters))
-        for fltr in filters:
-            self.assertTrue(fltr in expected_filters)
+        global_filters = Filters(global_filter_dict)
+        self.assertEqual(global_filters.must_filters, expected_must_filters)
+        self.assertEqual(global_filters.should_filters, expected_should_filters)
+        self.assertEqual(global_filters.not_filters, expected_not_filters)
+        self.assertEqual(global_filters.get_query(), expected_query)
 
+    def test_should_create_filters_with_type_filter(self):
+        expected_must_filters = [Filter('client_id', 1), Filter('user_id', 2), TypeFilter('help')]
+        expected_should_filters = [Filter('assigned_to', ['/api/v1/users/5/'])]
+        expected_not_filters = []
+        expected_query = {
+            "bool": {
+                "must": [
+                    {
+                        "term": {"client_id": 1}
+                    },
+                    {
+                        "term": {"user_id": 2}
+                    },
+                    {
+                        "type": {
+                            "value": "help"
+                        }
+                    }
+                ],
+                "should": [
+                    {
+                        "terms": {"assigned_to": ["/api/v1/users/5/"]}
+                    }
+                ],
+                "must_not": []
+            }
+        }
+        global_filter_dict = {
+            'and': [{"client_id": 1},
+                    {"user_id": 2}],
+            'or': [{"assigned_to": ["/api/v1/users/5/"]}],
+            'not': []
+        }
+        global_filters = Filters(global_filter_dict, TypeFilter('help'))
+        self.assertEqual(global_filters.must_filters, expected_must_filters)
+        self.assertEqual(global_filters.should_filters, expected_should_filters)
+        self.assertEqual(global_filters.not_filters, expected_not_filters)
+        self.assertEqual(global_filters.get_query(), expected_query)
 
-class BooleanFilterTest(unittest.TestCase):
-    def test_should_get_query_for_and_filter(self):
-        boolean_filter = BooleanFilter('and', [{"client_id": 1}, {"user_id": 2}])
-
-        if __name__ == '__main__':
-            unittest.main()

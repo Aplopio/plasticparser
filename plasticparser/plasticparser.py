@@ -21,7 +21,8 @@ def get_query_dsl(query_string, global_filters=None):
     expression = tokenizer.tokenize(query_string)[0]
     expression = Expression(query=expression.query,
                             type_filter=expression.type_filter,
-                            filters=(Filters(global_filters)))
+                            filters=Filters(global_filters_dict=global_filters,
+                                                  type_filter=expression.type_filter))
     return expression.get_query()
 
 
