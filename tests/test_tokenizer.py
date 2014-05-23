@@ -5,6 +5,7 @@ import unittest
 
 
 class TokenizerTest(unittest.TestCase):
+    '''
     def test_should_sanitize_value(self):
         for char in tokenizer.RESERVED_CHARS:
             sanitized_value = tokenizer.sanitize_value("abc{}".format(char))
@@ -38,3 +39,56 @@ class TokenizerTest(unittest.TestCase):
         query_string = "( abc:>def mms:>asd ) and (abc:>def mms:>asd) "
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, "(abc:>def and mms:>asd) and (abc:>def and mms:>asd)")
+
+    '''
+
+    def test_should_parse_logical_expression_with_type(self):
+        query_string = "type:candidates (abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': [
+                                {'type':
+                                     {'value': 'candidates'}
+                                }
+                            ]
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'(abc:>def and mms:>asd)'
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(parsed_string, expected_query_string)
+
+        '''
+        query_string = "(abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': []
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'(abc:>def and mms:>asd)'
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(parsed_string, expected_query_string)
+        '''

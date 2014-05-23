@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional
+from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums
 
 # from .entities import TypeFilter, Query, Expression
 
@@ -65,12 +65,43 @@ def _parse_base_logical_expression(tokens):
         tokens[and_log_pos] = 'and'
     return u' '.join(tokens)
 
+
 def _parse_one_or_more_logical_expressions(tokens):
     if ' ' in tokens.asList():
         and_log_pos = tokens.asList().index(' ')
         tokens[and_log_pos] = 'and'
     return u' '.join(tokens)
 
+
+def _parse_type_expression(tokens):
+    return {
+        "type": {"value": tokens[1]}
+    }
+
+
+def _parse_type_logical_facets_expression(tokens):
+    type_filter = tokens[0]
+    query = tokens[1]
+    return {
+        "query": {
+            "filtered": {
+                "query": {
+                    "query_string": {
+                        "query": query
+                    }
+                },
+                "filter": {
+                    "bool":{
+                        "must":[
+                            type_filter
+                        ],
+                        "should":[],
+                        "must_not":[]
+                    }
+                }
+            }
+        }
+    }
 
 def _construct_grammar():
     unicode_printables = u''.join(unichr(c) for c in xrange(65536)
@@ -88,16 +119,15 @@ def _construct_grammar():
     base_logical_expression = (compare_expression + logical_operator + compare_expression).setParseAction(
         _parse_logical_expression) | compare_expression
 
-
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
-    expression = OneOrMore(logical_expression+Optional(logical_operator)).setParseAction(_parse_one_or_more_logical_expressions)
+    type_expression = Word('type:') + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
+    expression = Optional(type_expression.setParseAction(_parse_type_expression)) + OneOrMore(
+        logical_expression + Optional(logical_operator)).setParseAction(
+        _parse_one_or_more_logical_expressions)
 
-    '''
-    expression = ('(' + (logical_expression + logical_operator + logical_expression) + ')').setParseAction(_parse_paren_logincal_expression) | (
-        logical_expression + logical_operator + logical_expression)
-    '''
+    expression.setParseAction(_parse_type_logical_facets_expression)
     return expression
 
 
