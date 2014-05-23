@@ -60,18 +60,22 @@ def _parse_paren_base_logical_expression(tokens):
 
 
 def _parse_base_logical_expression(tokens):
-    if len(tokens) == 2 and tokens[0].isspace():
-        tokens[0] = 'and'
+    if ' ' in tokens.asList():
+        and_log_pos = tokens.asList().index(' ')
+        tokens[and_log_pos] = 'and'
     return u' '.join(tokens)
 
 def _parse_one_or_more_logical_expressions(tokens):
+    if ' ' in tokens.asList():
+        and_log_pos = tokens.asList().index(' ')
+        tokens[and_log_pos] = 'and'
     return u' '.join(tokens)
 
 
 def _construct_grammar():
     unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                                   if not unichr(c).isspace())
-    word = Word(unicode_printables)
+    word = Word(unicode_printables, excludeChars=[')'])
     quoted_word = QuotedString('"', unquoteResults=True, escChar='\\')
     operator = oneOf(u": :< :> :<= :>= :=")
     logical_operator = CaselessLiteral('and') | CaselessLiteral('or') | White()
@@ -85,10 +89,10 @@ def _construct_grammar():
         _parse_logical_expression) | compare_expression
 
 
-    logical_expression = ('(' + base_logical_expression + ')').setParseAction(
-        _parse_paren_base_logical_expression) | base_logical_expression.setParseAction(_parse_base_logical_expression)
+    logical_expression = (Word('(') + base_logical_expression + Word(')')).setParseAction(
+        _parse_paren_base_logical_expression) | base_logical_expression
 
-    expression = OneOrMore(Optional(logical_operator)+logical_expression).setParseAction(_parse_one_or_more_logical_expressions)
+    expression = OneOrMore(logical_expression+Optional(logical_operator)).setParseAction(_parse_one_or_more_logical_expressions)
 
     '''
     expression = ('(' + (logical_expression + logical_operator + logical_expression) + ')').setParseAction(_parse_paren_logincal_expression) | (

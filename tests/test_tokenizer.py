@@ -23,18 +23,17 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, "abc:>def and mms:>asd")
 
-        query_string = "( abc:>def mms:>asd )"
+        query_string = "(abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, "(abc:>def and mms:>asd)")
 
-        '''
 
         query_string = "abc:>def mms:>asd (abc:def or pqe:123) and blab:blab"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, "abc:>def and mms:>asd and (abc:def or pqe:123) and blab:blab")
 
 
-
+        '''
         query_string = "( abc:>def mms:>asd ) (abc:>def mms:>asd) "
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, "(abc:>def and mms:>asd) and (abc:>def and mms:>asd)")
