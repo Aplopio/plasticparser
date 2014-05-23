@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from . import tokenizer
-from .entities import Expression, Filters
 
 
 def get_query_dsl(query_string, global_filters=None):
@@ -18,13 +17,14 @@ def get_query_dsl(query_string, global_filters=None):
     """
     global_filters = global_filters if global_filters else []
 
-    expression = tokenizer.tokenize(query_string)[0]
-    expression = Expression(query=expression.query,
-                            type_filter=expression.type_filter,
-                            filters=Filters(global_filters_dict=global_filters,
-                                                  type_filter=expression.type_filter))
-    return expression.get_query()
+    expression = tokenizer.tokenize(query_string)
 
+    # expression = Expression(query=expression.query,
+    #                         type_filter=expression.type_filter,
+    #                         filters=Filters(global_filters_dict=global_filters,
+    #                                               type_filter=expression.type_filter))
+    # return expression.get_query()
+    pass
 
 def get_document_types(query_string):
     """
@@ -33,5 +33,6 @@ def get_document_types(query_string):
      type: person title:foo AND description:bar
      where type corresponds to an elastic search document type
     """
-    expression = tokenizer.tokenize(query_string)[0]
-    return [expression.type_filter.value]
+    # expression = tokenizer.tokenize(query_string)[0]
+    # return [expression.type_filter.value]
+    pass
