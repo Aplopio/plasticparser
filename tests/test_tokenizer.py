@@ -43,6 +43,7 @@ class TokenizerTest(unittest.TestCase):
     '''
 
     def test_should_parse_logical_expression_with_type(self):
+        '''
         query_string = "type:candidates (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {
@@ -91,4 +92,3 @@ class TokenizerTest(unittest.TestCase):
             }
         }
         self.assertEqual(parsed_string, expected_query_string)
-        '''

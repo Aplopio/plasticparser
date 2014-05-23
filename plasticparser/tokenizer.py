@@ -80,8 +80,16 @@ def _parse_type_expression(tokens):
 
 
 def _parse_type_logical_facets_expression(tokens):
-    type_filter = tokens[0]
-    query = tokens[1]
+    must_list = []
+    shoiuld_list = []
+    must_not_list = []
+    if isinstance(tokens[0], dict):
+        type_filter = tokens[0]
+        must_list.append(type_filter)
+        query = tokens[1]
+    else:
+        query = tokens[0]
+
     return {
         "query": {
             "filtered": {
@@ -92,11 +100,9 @@ def _parse_type_logical_facets_expression(tokens):
                 },
                 "filter": {
                     "bool":{
-                        "must":[
-                            type_filter
-                        ],
-                        "should":[],
-                        "must_not":[]
+                        "must": must_list,
+                        "should": shoiuld_list,
+                        "must_not": must_not_list
                     }
                 }
             }
