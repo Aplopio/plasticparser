@@ -89,7 +89,7 @@ def _construct_grammar():
         _parse_logical_expression) | compare_expression
 
 
-    logical_expression = (Word('(') + base_logical_expression + Word(')')).setParseAction(
+    logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
     expression = OneOrMore(logical_expression+Optional(logical_operator)).setParseAction(_parse_one_or_more_logical_expressions)
