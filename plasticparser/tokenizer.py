@@ -81,7 +81,7 @@ def _parse_type_expression(tokens):
 
 def _parse_type_logical_facets_expression(tokens):
     must_list = []
-    shoiuld_list = []
+    should_list = []
     must_not_list = []
     if isinstance(tokens[0], dict):
         type_filter = tokens[0]
@@ -99,15 +99,16 @@ def _parse_type_logical_facets_expression(tokens):
                     }
                 },
                 "filter": {
-                    "bool":{
+                    "bool": {
                         "must": must_list,
-                        "should": shoiuld_list,
+                        "should": should_list,
                         "must_not": must_not_list
                     }
                 }
             }
         }
     }
+
 
 def _construct_grammar():
     unicode_printables = u''.join(unichr(c) for c in xrange(65536)
@@ -129,12 +130,16 @@ def _construct_grammar():
         _parse_paren_base_logical_expression) | base_logical_expression
 
     type_expression = Word('type:') + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
-    expression = Optional(type_expression.setParseAction(_parse_type_expression)) + OneOrMore(
+    single_facet_expression = Word
+    base_facets_expression = OneOrMore(single_facet_expression + Optional(','))
+    facets_expression = Word('facets:') + '[' + base_facets_expression + ']'
+    base_expression = Optional(type_expression.setParseAction(_parse_type_expression)) + OneOrMore(
         logical_expression + Optional(logical_operator)).setParseAction(
-        _parse_one_or_more_logical_expressions)
+        _parse_one_or_more_logical_expressions) + Optional(facets_expression)
 
-    expression.setParseAction(_parse_type_logical_facets_expression)
-    return expression
+    base_expression.setParseAction(_parse_type_logical_facets_expression)
+
+    return base_expression
 
 
 grammar = _construct_grammar()
