@@ -49,12 +49,11 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': {'facets': [{'aaa': {
-                             'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
-                             'terms': {'field': 'a'},
-                             'nested': u''}}]}}}}}, 'facets': [{'aaa': {
-            'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}}, 'terms': {'field': 'a'},
-            'nested': u''}}]}
+                         'query': {'query_string': {'query': {
+                             'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
+                                     'terms': {'field': 'a'}, 'nested': u''}}}}}}, 'facets': {
+            'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}}, 'terms': {'field': 'a'},
+                    'nested': u''}}}
         self.assertEqual(parsed_string, expected_query_string)
 
         query_string = "type:def (abc:>def mms:>asd)"
@@ -62,4 +61,20 @@ class TokenizerTest(unittest.TestCase):
         expected_query_string = {'query': {
         'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
                      'query': {'query_string': {'query': u'(abc:>def and mms:>asd)'}}}}, 'facets': {}}
+        self.assertEqual(parsed_string, expected_query_string)
+
+        query_string = "type:def facets: [ aaa.bb(abc:def) bbb(cc:ddd) ] (abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {'query': {
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': {
+                             'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
+                                        'terms': {'field': 'b'}, 'nested': u'aaa'},
+                             'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd'}}},
+                                     'terms': {'field': 'b'},
+                                     'nested': u''}}}}}}, 'facets': {
+            'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}}, 'terms': {'field': 'b'},
+                       'nested': u'aaa'},
+            'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd'}}}, 'terms': {'field': 'b'},
+                    'nested': u''}}}
         self.assertEqual(parsed_string, expected_query_string)

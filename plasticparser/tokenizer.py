@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums, alphas
+from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums, alphas, \
+    srange
 
 # from .entities import TypeFilter, Query, Expression
 
@@ -88,7 +89,7 @@ def _parse_type_logical_facets_expression(tokens):
         type_filter = tokens[0]
         must_list.append(type_filter)
         if isinstance(tokens[1], dict):
-            facets = tokens[1]['facets']
+            facets = tokens[1]
         query = tokens[1]
     else:
         query = tokens[0]
@@ -117,7 +118,7 @@ def _parse_type_logical_facets_expression(tokens):
 
 def _parse_single_facet_expression(tokens):
     main_key = tokens[0]
-    nested_field = u'.'.join(main_key.split('.')[:-1])
+    nested_field = u".".join(main_key.split('.')[:-1])
     return {
         main_key: {
             "terms": {
@@ -134,9 +135,10 @@ def _parse_single_facet_expression(tokens):
 
 
 def _parse_base_facets_expression(tokens):
-    return {
-        "facets": tokens.asList()
-    }
+    facets = {}
+    for tok in tokens.asList():
+        facets.update(tok)
+    return facets
 
 
 def _construct_grammar():
@@ -160,7 +162,7 @@ def _construct_grammar():
 
     type_expression = Word('type:') + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
 
-    single_facet_expression = Word(alphas) + Word('(').suppress() + logical_expression + Word(')').suppress()
+    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + logical_expression + Word(')').suppress()
     base_facets_expression = OneOrMore(
         single_facet_expression.setParseAction(_parse_single_facet_expression) + Optional(',').suppress()) + Word(
         ']').suppress()
