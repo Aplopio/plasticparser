@@ -32,7 +32,8 @@ class TokenizerTest(unittest.TestCase):
 
         query_string = "abc:>def mms:>asd (abc:def or pqe:123) and blab:blab"
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), "abc:>def and mms:>asd and (abc:def or pqe:123) and blab:blab")
+        self.assertEqual(self.get_query_string(parsed_string),
+                         "abc:>def and mms:>asd and (abc:def or pqe:123) and blab:blab")
 
         query_string = "( abc:>def mms:>asd ) (abc:>def mms:>asd) "
         parsed_string = tokenizer.tokenize(query_string)
@@ -46,23 +47,19 @@ class TokenizerTest(unittest.TestCase):
     def test_should_parse_logical_expression_with_type(self):
         query_string = "type:def facets: [ aaa(abc:def) ] (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
-        import ipdb; ipdb.set_trace()
-        expected_query_string = {
-            'query': {
-                'filtered': {
-                    'filter': {
-                        'bool': {
-                            'should': [],
-                            'must_not': [],
-                            'must': []
-                        }
-                    },
-                    'query': {
-                        'query_string': {
-                            'query': u'(abc:>def and mms:>asd)'
-                        }
-                    }
-                }
-            }
-        }
+        expected_query_string = {'query': {
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': {'facets': [{'aaa': {
+                             'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
+                             'terms': {'field': 'a'},
+                             'nested': u''}}]}}}}}, 'facets': [{'aaa': {
+            'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}}, 'terms': {'field': 'a'},
+            'nested': u''}}]}
+        self.assertEqual(parsed_string, expected_query_string)
+
+        query_string = "type:def (abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {'query': {
+        'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                     'query': {'query_string': {'query': u'(abc:>def and mms:>asd)'}}}}, 'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
