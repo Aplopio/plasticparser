@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums
+from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums, alphas
 
 # from .entities import TypeFilter, Query, Expression
 
@@ -106,7 +106,33 @@ def _parse_type_logical_facets_expression(tokens):
                     }
                 }
             }
+        },
+        "facets": tokens[1]['facets']
+    }
+
+
+
+def _parse_single_facet_expression(tokens):
+    main_key = tokens[0]
+    nested_field = u'.'.join(main_key.split('.')[:-1])
+    return {
+        main_key: {
+            "terms": {
+                "field": main_key[len(main_key) - 1]
+            },
+            "nested": nested_field,
+            "facet_filter": {
+                "query": {
+                    "query_string": {"query": tokens[1]}
+                }
+            }
         }
+    }
+
+
+def _parse_base_facets_expression(tokens):
+    return {
+        "facets": tokens.asList()
     }
 
 
@@ -130,12 +156,17 @@ def _construct_grammar():
         _parse_paren_base_logical_expression) | base_logical_expression
 
     type_expression = Word('type:') + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
-    single_facet_expression = Word
-    base_facets_expression = OneOrMore(single_facet_expression + Optional(','))
-    facets_expression = Word('facets:') + '[' + base_facets_expression + ']'
-    base_expression = Optional(type_expression.setParseAction(_parse_type_expression)) + OneOrMore(
+
+    single_facet_expression = Word(alphas) + Word('(').suppress() + logical_expression + Word(')').suppress()
+    base_facets_expression = OneOrMore(
+        single_facet_expression.setParseAction(_parse_single_facet_expression) + Optional(',').suppress()) + Word(
+        ']').suppress()
+    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression.setParseAction(_parse_base_facets_expression)
+
+    base_expression = Optional(
+        type_expression.setParseAction(_parse_type_expression)) + Optional(facets_expression) + OneOrMore(
         logical_expression + Optional(logical_operator)).setParseAction(
-        _parse_one_or_more_logical_expressions) + Optional(facets_expression)
+        _parse_one_or_more_logical_expressions)
 
     base_expression.setParseAction(_parse_type_logical_facets_expression)
 

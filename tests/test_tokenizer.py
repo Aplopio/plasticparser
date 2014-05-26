@@ -44,34 +44,9 @@ class TokenizerTest(unittest.TestCase):
 
 
     def test_should_parse_logical_expression_with_type(self):
-        query_string = "type:candidates (abc:>def mms:>asd)"
+        query_string = "type:def facets: [ aaa(abc:def) ] (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
-        expected_query_string = {
-            'query': {
-                'filtered': {
-                    'filter': {
-                        'bool': {
-                            'should': [],
-                            'must_not': [],
-                            'must': [
-                                {'type':
-                                     {'value': 'candidates'}
-                                }
-                            ]
-                        }
-                    },
-                    'query': {
-                        'query_string': {
-                            'query': u'(abc:>def and mms:>asd)'
-                        }
-                    }
-                }
-            }
-        }
-        self.assertEqual(parsed_string, expected_query_string)
-
-        query_string = "(abc:>def mms:>asd)"
-        parsed_string = tokenizer.tokenize(query_string)
+        import ipdb; ipdb.set_trace()
         expected_query_string = {
             'query': {
                 'filtered': {
