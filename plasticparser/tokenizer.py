@@ -18,6 +18,13 @@ def sanitize_value(value):
         value = value.replace(char, u'\{}'.format(char))
     return value
 
+def sanitize_facet_value(value):
+    if not isinstance(value, basestring):
+        return value
+    for char in RESERVED_CHARS:
+        if char not in '"':
+            value = value.replace(char, u'\{}'.format(char))
+    return value
 
 def _replace_with_and(tokens, i):
     tokens[i] = 'AND'
@@ -26,6 +33,8 @@ def _replace_with_and(tokens, i):
 def _parse_compare_expression(tokens):
     return u"{}{}{}".format(tokens[0], tokens[1], sanitize_value(tokens[2]))
 
+def _parse_facet_compare_expression(tokens):
+    return u"{}{}{}".format(tokens[0], tokens[1], sanitize_facet_value(tokens[2]))
 
 def _parse_logical_expression(tokens):
     if ' ' in tokens.asList():
@@ -137,10 +146,21 @@ def _construct_grammar():
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
+
+    facet_compare_expression = key + operator + value
+    facet_compare_expression.setParseAction(_parse_facet_compare_expression)
+
+    facet_base_logical_expression = (facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
+        _parse_logical_expression) | facet_compare_expression
+
+    facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
+        _parse_paren_base_logical_expression) | facet_base_logical_expression
+
+
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
 
-    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + logical_expression + Word(
+    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + facet_logical_expression + Word(
         ')').suppress()
     base_facets_expression = OneOrMore(
         single_facet_expression.setParseAction(_parse_single_facet_expression) + Optional(',').suppress()) + Word(
