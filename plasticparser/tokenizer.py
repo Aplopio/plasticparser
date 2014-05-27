@@ -64,17 +64,12 @@ def _parse_paren_base_logical_expression(tokens):
     return u'{}{}{}'.format(tokens[0], tokens[1], tokens[2])
 
 
-def _parse_base_logical_expression(tokens):
+def default_parse_func(tokens):
     if ' ' in tokens.asList():
         [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
     return u' '.join(tokens)
 
-
-def _parse_one_or_more_logical_expressions(tokens):
-    if ' ' in tokens.asList():
-        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
-    return u' '.join(tokens)
-
+_parse_one_or_more_logical_expressions = _parse_base_logical_expression = default_parse_func
 
 def _parse_type_expression(tokens):
     return {
