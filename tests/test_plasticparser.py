@@ -13,7 +13,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello OR description:\\"world\\"'}
+                            "query": 'title:hello OR description:"world"'}
                     },
                     "filter": {
                         "bool": {
@@ -65,7 +65,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello AND description:\\"world\\"'
+                            "query": 'title:hello AND description:"world"'
                         }
                     },
                     "filter": {
@@ -152,7 +152,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello AND description:\\"world\\"'
+                            "query": 'title:hello AND description:"world"'
                         }
                     },
                     "filter": {

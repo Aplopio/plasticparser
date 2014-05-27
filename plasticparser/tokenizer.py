@@ -7,7 +7,7 @@ from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, OneOrMo
 RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
                   '{', '}', '[', ']',
-                  '^', '"', '~', '*',
+                  '^', '~', '*',
                   '?', '/', ':')
 
 
