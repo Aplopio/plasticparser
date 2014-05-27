@@ -33,6 +33,6 @@ def get_document_types(query_string):
      type: person title:foo AND description:bar
      where type corresponds to an elastic search document type
     """
-    # expression = tokenizer.tokenize(query_string)[0]
-    # return [expression.type_filter.value]
-    pass
+    expression = tokenizer.tokenize(query_string)
+    must_filters = expression['query']['filtered']['filter']['bool']['must']
+    return [filter['type']['value'] for filter in must_filters if filter.keys()[0]=='type']
