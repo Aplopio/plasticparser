@@ -18,11 +18,12 @@ def get_query_dsl(query_string, global_filters=None):
     global_filters = global_filters if global_filters else {}
 
     expression = tokenizer.tokenize(query_string)
-    bool_lists = expression['query']['filtered']['filter']['bool']
 
-    bool_lists['should'].append(global_filters['or']) if global_filters.get('or') else None
-    bool_lists['must'].append(global_filters['and']) if global_filters.get('and') else None
-    bool_lists['must_not'].append(global_filters['not']) if global_filters.get('not') else None
+    bool_lists = expression['query']['filtered']['filter']['bool']
+    [bool_lists['should'].append({"term": orele}) for orele in global_filters.get('or', [])]
+    [bool_lists['must'].append({"term": andele}) for andele in global_filters.get('and', [])]
+    [bool_lists['must_not'].append({"term": notele}) for notele in global_filters.get('not', [])]
+
     return expression
 
 def get_document_types(query_string):
