@@ -13,7 +13,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello or description:\\"world\\"'}
+                            "query": 'title:hello OR description:\\"world\\"'}
                     },
                     "filter": {
                         "bool": {
@@ -36,7 +36,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "due_date:<1234 and due_date:>1234 and due_date:>=1234 and (due_date:>=1234)"
+                            "query": "due_date:<1234 AND due_date:>1234 AND due_date:>=1234 AND (due_date:>=1234)"
                         }
                     },
                     "filter": {
@@ -65,7 +65,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello and description:\\"world\\"'
+                            "query": 'title:hello AND description:\\"world\\"'
                         }
                     },
                     "filter": {
@@ -102,7 +102,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello and description:\\"world\\"'
+                            "query": 'title:hello AND description:\\"world\\"'
                         }
                     },
                     "filter": {
