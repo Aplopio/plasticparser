@@ -97,7 +97,7 @@ def _parse_single_facet_expression(tokens):
     return {
         main_key: {
             "terms": {
-                "field": main_key[len(main_key) - 1]
+                "field": main_key.split(".")[len(main_key) - 1]
             },
             "nested": nested_field,
             "facet_filter": {
