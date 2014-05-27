@@ -87,10 +87,14 @@ def _parse_type_logical_facets_expression(tokens):
     facets = {}
     if isinstance(tokens[0], dict):
         type_filter = tokens[0]
-        must_list.append(type_filter)
+        if type_filter.keys()[0] == 'type':
+            must_list.append(type_filter)
+        else:
+            facets = tokens[0]
+        query = tokens[1]
         if isinstance(tokens[1], dict):
             facets = tokens[1]
-        query = tokens[1]
+            query = tokens[2]
     else:
         query = tokens[0]
 

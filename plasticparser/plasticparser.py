@@ -15,16 +15,15 @@ def get_query_dsl(query_string, global_filters=None):
      so that the query can be narrowed down to fewer documents.
      It is translated into an elastic search term filter.
     """
-    global_filters = global_filters if global_filters else []
+    global_filters = global_filters if global_filters else {}
 
     expression = tokenizer.tokenize(query_string)
+    bool_lists = expression['query']['filtered']['filter']['bool']
 
-    # expression = Expression(query=expression.query,
-    #                         type_filter=expression.type_filter,
-    #                         filters=Filters(global_filters_dict=global_filters,
-    #                                               type_filter=expression.type_filter))
-    # return expression.get_query()
-    pass
+    bool_lists['should'].append(global_filters['or']) if global_filters.get('or') else None
+    bool_lists['must'].append(global_filters['and']) if global_filters.get('and') else None
+    bool_lists['must_not'].append(global_filters['not']) if global_filters.get('not') else None
+    return expression
 
 def get_document_types(query_string):
     """
