@@ -47,7 +47,7 @@ def sanitize_value(value):
 
 
 def _replace_with_and(tokens, i):
-    tokens[i] = 'and'
+    tokens[i] = 'AND'
 
 
 def _parse_compare_expression(tokens):
@@ -147,7 +147,7 @@ def _construct_grammar():
     word = Word(unicode_printables, excludeChars=[')'])
     quoted_word = QuotedString('"', unquoteResults=False, escChar='\\')
     operator = oneOf(u": :< :> :<= :>= :=")
-    logical_operator = CaselessLiteral('and') | CaselessLiteral('or') | White()
+    logical_operator = CaselessLiteral('AND') | CaselessLiteral('OR') | White()
     value = quoted_word | word
     key = Word(unicode_printables,
                excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
@@ -161,7 +161,7 @@ def _construct_grammar():
         _parse_paren_base_logical_expression) | base_logical_expression
 
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
-        CaselessLiteral('and')).suppress()
+        CaselessLiteral('AND')).suppress()
 
     single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + logical_expression + Word(
         ')').suppress()
