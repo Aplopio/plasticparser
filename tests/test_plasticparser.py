@@ -13,7 +13,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello OR description:\\"world\\"'}
+                            "query": 'title:hello or description:\\"world\\"'}
                     },
                     "filter": {
                         "bool": {
@@ -23,19 +23,20 @@ class PlasticParserTestCase(unittest.TestCase):
                         }
                     },
                 }
-            }
+            },
+            "facets": {}
         }
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
 
     def test_should_return_elastic_search_query_dsl_for_queries_with_comparision_operators(self):
-        query_string = 'type:help and due_date<1234 due_date>1234 due_date<=1234 (due_date>=1234)'
+        query_string = 'type:help and due_date:<1234 due_date:>1234 due_date:>=1234 (due_date:>=1234)'
         expected_query_dsl = {
             "query": {
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "due_date<1234 due_date>1234 due_date<=1234 (due_date>=1234)"
+                            "query": "due_date:<1234 and due_date:>1234 and due_date:>=1234 and (due_date:>=1234)"
                         }
                     },
                     "filter": {
@@ -50,10 +51,10 @@ class PlasticParserTestCase(unittest.TestCase):
                         }
                     }
                 }
-            }
+            },
+            "facets": {}
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
-
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
 
@@ -64,7 +65,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello description:\\"world\\"'
+                            "query": 'title:hello and description:\\"world\\"'
                         }
                     },
                     "filter": {
@@ -79,15 +80,16 @@ class PlasticParserTestCase(unittest.TestCase):
                         }
                     }
                 }
-            }
+            },
+            "facets": {}
         }
 
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
-
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
 
     def test_should_return_elastic_search_query_dsl_for_basic_query_with_global_filters(self):
+        self.maxDiff = None
         query_string = 'type:help and title:hello description:"world"'
         global_filters = {
             'and': [{"client_id": 1},
@@ -100,32 +102,33 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello description:\\"world\\"'
+                            "query": 'title:hello and description:\\"world\\"'
                         }
                     },
                     "filter": {
                         "bool": {
                             "must": [
                                 {
-                                    "term": {"client_id": 1}
+                                    'type': {'value': 'help'}
                                 },
                                 {
-                                    "term": {"user_id": 2}
+                                    'term': {'client_id': 1}
                                 },
                                 {
-                                    "type": {"value": "help"}
+                                    'term': {'user_id': 2}
                                 }
                             ],
                             "should": [
                                 {
-                                    "terms": {"assigned_to": ["/api/v1/users/5/"]}
+                                    "term": {"assigned_to": ["/api/v1/users/5/"]}
                                 }
                             ],
                             "must_not": []
                         }
                     }
                 }
-            }
+            },
+            "facets": {}
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)

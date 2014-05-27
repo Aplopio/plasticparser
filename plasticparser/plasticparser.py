@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from . import tokenizer
-from .entities import Expression, Filters
 
 
 def get_query_dsl(query_string, global_filters=None):
@@ -16,15 +15,16 @@ def get_query_dsl(query_string, global_filters=None):
      so that the query can be narrowed down to fewer documents.
      It is translated into an elastic search term filter.
     """
-    global_filters = global_filters if global_filters else []
+    global_filters = global_filters if global_filters else {}
 
-    expression = tokenizer.tokenize(query_string)[0]
-    expression = Expression(query=expression.query,
-                            type_filter=expression.type_filter,
-                            filters=Filters(global_filters_dict=global_filters,
-                                                  type_filter=expression.type_filter))
-    return expression.get_query()
+    expression = tokenizer.tokenize(query_string)
 
+    bool_lists = expression['query']['filtered']['filter']['bool']
+    [bool_lists['should'].append({"term": orele}) for orele in global_filters.get('or', [])]
+    [bool_lists['must'].append({"term": andele}) for andele in global_filters.get('and', [])]
+    [bool_lists['must_not'].append({"term": notele}) for notele in global_filters.get('not', [])]
+
+    return expression
 
 def get_document_types(query_string):
     """
@@ -33,5 +33,6 @@ def get_document_types(query_string):
      type: person title:foo AND description:bar
      where type corresponds to an elastic search document type
     """
-    expression = tokenizer.tokenize(query_string)[0]
-    return [expression.type_filter.value]
+    expression = tokenizer.tokenize(query_string)
+    must_filters = expression['query']['filtered']['filter']['bool']['must']
+    return [filter['type']['value'] for filter in must_filters if filter.keys()[0]=='type']
