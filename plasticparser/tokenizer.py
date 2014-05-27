@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, OneOrMore, Optional, alphanums, \
-    srange
+    srange, ZeroOrMore
 
 
 RESERVED_CHARS = ('\\', '+', '-', '&&',
@@ -147,7 +147,7 @@ def _construct_grammar():
         _parse_base_facets_expression)
 
     base_expression = Optional(
-        type_expression.setParseAction(_parse_type_expression)) + Optional(facets_expression) + OneOrMore(
+        type_expression.setParseAction(_parse_type_expression)) + Optional(facets_expression) + ZeroOrMore(
         logical_expression + Optional(logical_operator)).setParseAction(
         _parse_one_or_more_logical_expressions)
 

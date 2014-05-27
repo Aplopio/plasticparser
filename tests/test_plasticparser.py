@@ -88,6 +88,61 @@ class PlasticParserTestCase(unittest.TestCase):
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
 
+    def test_should_return_elastic_search_query_dsl_for_when_no_querystring_with_facets(self):
+        query_string = 'type:help facets: [ aaa.bb(abc:def) bbb(cc:ddd) ]'
+        expected_query_dsl = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": ''
+                        }
+                    },
+                    "filter": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "type": {"value": "help"}
+                                }
+                            ],
+                            "should": [],
+                            "must_not": []
+                        }
+                    }
+                }
+            },
+            "facets": {
+                'aaa.bb': {
+                    'facet_filter': {
+                        'query': {
+                            'query_string': {
+                                'query': u'abc:def'}
+                        }
+                    },
+                    'terms': {
+                        'field': 'b'
+                    },
+                    'nested': u'aaa'
+                },
+                'bbb': {
+                    'facet_filter': {
+                        'query': {
+                            'query_string': {
+                                'query': u'cc:ddd'
+                            }
+                        }
+                    },
+                    'terms': {
+                        'field': 'b'
+                    },
+                    'nested': u''
+                }
+            }
+        }
+
+        elastic_query_dsl = plasticparser.get_query_dsl(query_string)
+        self.assertEqual(elastic_query_dsl, expected_query_dsl)
+
     def test_should_return_elastic_search_query_dsl_for_basic_query_with_global_filters(self):
         self.maxDiff = None
         query_string = 'type:help and title:hello description:"world"'
