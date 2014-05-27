@@ -149,7 +149,7 @@ def _construct_grammar():
     unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                                   if not unichr(c).isspace())
     word = Word(unicode_printables, excludeChars=[')'])
-    quoted_word = QuotedString('"', unquoteResults=True, escChar='\\')
+    quoted_word = QuotedString('"', unquoteResults=False, escChar='\\')
     operator = oneOf(u": :< :> :<= :>= :=")
     logical_operator = CaselessLiteral('and') | CaselessLiteral('or') | White()
     value = quoted_word | word
@@ -164,7 +164,7 @@ def _construct_grammar():
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
-    type_expression = Word('type:') + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
+    type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
 
     single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + logical_expression + Word(')').suppress()
     base_facets_expression = OneOrMore(
