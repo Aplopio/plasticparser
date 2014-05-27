@@ -18,7 +18,6 @@ def get_query_dsl(query_string, global_filters=None):
     global_filters = global_filters if global_filters else {}
 
     expression = tokenizer.tokenize(query_string)
-
     bool_lists = expression['query']['filtered']['filter']['bool']
     [bool_lists['should'].append({"term": orele}) for orele in global_filters.get('or', [])]
     [bool_lists['must'].append({"term": andele}) for andele in global_filters.get('and', [])]
