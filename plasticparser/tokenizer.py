@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums, alphas, \
+from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums, \
+    alphas, \
     srange
 
 # from .entities import TypeFilter, Query, Expression
@@ -45,15 +46,18 @@ def sanitize_value(value):
     return value
 
 
+def _replace_with_and(tokens, i):
+    tokens[i] = 'and'
+
+
 def _parse_compare_expression(tokens):
     return u"{}{}{}".format(tokens[0], tokens[1], sanitize_value(tokens[2]))
 
 
 def _parse_logical_expression(tokens):
-    logical_operator = tokens[1]
-    if logical_operator.isspace():
-        logical_operator = "and"
-    return u'{} {} {}'.format(tokens[0], logical_operator, tokens[2])
+    if ' ' in tokens.asList():
+        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
+    return u'{} {} {}'.format(tokens[0], tokens[1], tokens[2])
 
 
 def _parse_paren_base_logical_expression(tokens):
@@ -62,15 +66,13 @@ def _parse_paren_base_logical_expression(tokens):
 
 def _parse_base_logical_expression(tokens):
     if ' ' in tokens.asList():
-        and_log_pos = tokens.asList().index(' ')
-        tokens[and_log_pos] = 'and'
+        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
     return u' '.join(tokens)
 
 
 def _parse_one_or_more_logical_expressions(tokens):
     if ' ' in tokens.asList():
-        and_log_pos = tokens.asList().index(' ')
-        tokens[and_log_pos] = 'and'
+        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
     return u' '.join(tokens)
 
 
@@ -119,7 +121,6 @@ def _parse_type_logical_facets_expression(tokens):
     }
 
 
-
 def _parse_single_facet_expression(tokens):
     main_key = tokens[0]
     nested_field = u".".join(main_key.split('.')[:-1])
@@ -154,7 +155,7 @@ def _construct_grammar():
     logical_operator = CaselessLiteral('and') | CaselessLiteral('or') | White()
     value = quoted_word | word
     key = Word(unicode_printables,
-               excludeChars=[':', ':>', ':>=', ':<', ':<='])
+               excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
     compare_expression = key + operator + value
     compare_expression.setParseAction(_parse_compare_expression)
 
@@ -164,13 +165,16 @@ def _construct_grammar():
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
-    type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(CaselessLiteral('and')).suppress()
+    type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
+        CaselessLiteral('and')).suppress()
 
-    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + logical_expression + Word(')').suppress()
+    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + logical_expression + Word(
+        ')').suppress()
     base_facets_expression = OneOrMore(
         single_facet_expression.setParseAction(_parse_single_facet_expression) + Optional(',').suppress()) + Word(
         ']').suppress()
-    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression.setParseAction(_parse_base_facets_expression)
+    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression.setParseAction(
+        _parse_base_facets_expression)
 
     base_expression = Optional(
         type_expression.setParseAction(_parse_type_expression)) + Optional(facets_expression) + OneOrMore(
