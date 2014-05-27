@@ -93,11 +93,6 @@ class PlasticParserTestCase(unittest.TestCase):
         expected_query_dsl = {
             "query": {
                 "filtered": {
-                    "query": {
-                        "query_string": {
-                            "query": ''
-                        }
-                    },
                     "filter": {
                         "bool": {
                             "must": [

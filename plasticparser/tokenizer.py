@@ -70,14 +70,9 @@ def _parse_type_logical_facets_expression(tokens):
     else:
         query = tokens[0]
 
-    return {
+    query_dsl = {
         "query": {
             "filtered": {
-                "query": {
-                    "query_string": {
-                        "query": query
-                    }
-                },
                 "filter": {
                     "bool": {
                         "must": must_list,
@@ -89,6 +84,13 @@ def _parse_type_logical_facets_expression(tokens):
         },
         "facets": facets
     }
+    if query:
+        query_dsl["query"]["filtered"]["query"] = {
+            "query_string": {
+                "query": query
+            }
+        }
+    return query_dsl
 
 
 def _parse_single_facet_expression(tokens):
