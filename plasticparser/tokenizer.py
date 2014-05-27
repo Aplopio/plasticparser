@@ -1,35 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, Literal, OneOrMore, Optional, alphanums, \
-    alphas, \
+from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, OneOrMore, Optional, alphanums, \
     srange
 
-# from .entities import TypeFilter, Query, Expression
-
-
-# def _got_type_term(tokens):
-#     return TypeFilter(tokens[2])
-
-
-# def _got_query(tokens):
-#     return Query(tokens[0])
-
-
-# def _got_expression(tokens):
-#     type_filter = tokens[0] if len(tokens) == 2 else None
-#     query = tokens[1] if len(tokens) == 2 else tokens[0]
-#     return Expression(type_filter, query)
-
-
-# def _construct_grammar():
-#     unicode_printables = u''.join(unichr(c) for c in xrange(65536))
-#     type_term = Literal("type") + ':' + Word(alphas) + Optional(CaselessLiteral('and').suppress())
-#     type_term.setParseAction(_got_type_term)
-#     query_string = Word(unicode_printables)
-#     query_string.setParseAction(_got_query)
-#     expression = Optional(type_term) + query_string
-#     expression.setParseAction(_got_expression)
-#     return expression
 
 RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
@@ -69,7 +42,9 @@ def default_parse_func(tokens):
         [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
     return u' '.join(tokens)
 
+
 _parse_one_or_more_logical_expressions = _parse_base_logical_expression = default_parse_func
+
 
 def _parse_type_expression(tokens):
     return {

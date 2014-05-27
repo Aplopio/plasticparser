@@ -1,7 +1,6 @@
-from plasticparser import tokenizer
-from plasticparser.entities import TypeFilter, Query, Expression
-
 import unittest
+
+from plasticparser import tokenizer
 
 
 class TokenizerTest(unittest.TestCase):
