@@ -167,8 +167,8 @@ def _construct_grammar():
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
 
-    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Word('(').suppress() + facet_logical_expression + Word(
-        ')').suppress()
+    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + facet_logical_expression + Word(
+        ')').suppress())
     base_facets_expression = OneOrMore(
         single_facet_expression.setParseAction(_parse_single_facet_expression) + Optional(',').suppress()) + Word(
         ']').suppress()

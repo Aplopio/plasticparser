@@ -43,7 +43,7 @@ class TokenizerTest(unittest.TestCase):
         self.assertEqual(self.get_query_string(parsed_string), "(abc:>def AND mms:>asd) AND (abc:>def AND mms:>asd)")
 
 
-    def test_should_parse_logical_expression_with_type(self):
+    def test_should_parse_logical_expression_with_type_and_facets(self):
         query_string = "type:def facets: [ aaa(abc:def) ] (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
@@ -53,6 +53,7 @@ class TokenizerTest(unittest.TestCase):
 
         self.assertEqual(parsed_string, expected_query_string)
 
+    def test_should_parse_logical_expression_with_type(self):
         query_string = "type:def (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
@@ -60,16 +61,18 @@ class TokenizerTest(unittest.TestCase):
                          'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
 
+    def test_should_parse_logical_expression_with_type_multi_facets(self):
         query_string = "type:def facets: [ aaa.bb(abc:def) bbb(cc:ddd) ] (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
-        'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                     'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
-        'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}}, 'terms': {'field': 'bb'},
-                   'nested': u'aaa'},
-        'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd'}}}, 'terms': {'field': 'bbb'}}}}
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+            'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}}, 'terms': {'field': 'bb'},
+                       'nested': u'aaa'},
+            'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd'}}}, 'terms': {'field': 'bbb'}}}}
         self.assertEqual(parsed_string, expected_query_string)
 
+    def test_should_parse_basic_logical_expression(self):
         query_string = 'title:hello OR description:"world"'
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}},
@@ -77,3 +80,19 @@ class TokenizerTest(unittest.TestCase):
                                                             'query': u'title:hello OR description:\\"world\\"'}}}},
                                  'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
+
+    def test_should_parse_basic_logical_expression_facets_with_no_facet_filters(self):
+        query_string = "type:def facets: [ aaa.bb ] (abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {'query': {
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}},
+                                         'facets': {'aaa.bb': {'terms': {'field': 'bb'}, 'nested': u'aaa'}}})
+
+    def test_should_parse_basic_logical_expression_facets_with_simple_field(self):
+        query_string = "type:def facets: [ aaa ] (abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {'query': {
+        'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                     'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}},
+                                         'facets': {'aaa': {'terms': {'field': 'aaa'}}}})
