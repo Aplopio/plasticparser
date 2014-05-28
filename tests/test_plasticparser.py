@@ -106,19 +106,19 @@ class PlasticParserTestCase(unittest.TestCase):
                     }
                 }
             },
-            "facets": {
+            'facets': {
                 'aaa.bb': {
                     'facet_filter': {
                         'query': {
                             'query_string': {
-                                'query': u'abc:def'}
+                                'query': u'abc:def'
+                            }
                         }
                     },
                     'terms': {
-                        'field': 'b'
+                        'field': 'bb'
                     },
-                    'nested': u'aaa'
-                },
+                    'nested': u'aaa'},
                 'bbb': {
                     'facet_filter': {
                         'query': {
@@ -128,9 +128,8 @@ class PlasticParserTestCase(unittest.TestCase):
                         }
                     },
                     'terms': {
-                        'field': 'b'
-                    },
-                    'nested': u''
+                        'field': 'bbb'
+                    }
                 }
             }
         }

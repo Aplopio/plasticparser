@@ -18,6 +18,7 @@ def sanitize_value(value):
         value = value.replace(char, u'\{}'.format(char))
     return value
 
+
 def sanitize_facet_value(value):
     if not isinstance(value, basestring):
         return value
@@ -26,6 +27,7 @@ def sanitize_facet_value(value):
             value = value.replace(char, u'\{}'.format(char))
     return value
 
+
 def _replace_with_and(tokens, i):
     tokens[i] = 'AND'
 
@@ -33,8 +35,10 @@ def _replace_with_and(tokens, i):
 def _parse_compare_expression(tokens):
     return u"{}{}{}".format(tokens[0], tokens[1], sanitize_value(tokens[2]))
 
+
 def _parse_facet_compare_expression(tokens):
     return u"{}{}{}".format(tokens[0], tokens[1], sanitize_facet_value(tokens[2]))
+
 
 def _parse_logical_expression(tokens):
     if ' ' in tokens.asList():
@@ -103,21 +107,25 @@ def _parse_type_logical_facets_expression(tokens):
 
 
 def _parse_single_facet_expression(tokens):
-    main_key = tokens[0]
-    nested_field = u".".join(main_key.split('.')[:-1])
-    return {
-        main_key: {
-            "terms": {
-                "field": main_key.split(".")[len(main_key.split(".")) - 1]
-            },
-            "nested": nested_field,
-            "facet_filter": {
-                "query": {
-                    "query_string": {"query": tokens[1]}
-                }
+    facet_key = tokens[0]
+    filters = {
+        facet_key: {}
+    }
+    field = facet_key
+    if "." in facet_key:
+        nested_keys = facet_key.split(".")
+        nested_field = u".".join(nested_keys[:-1])
+        field = nested_keys[-1]
+        filters[facet_key]['nested'] = nested_field
+
+    filters[facet_key]["terms"] = {"field": field}
+    if len(tokens) > 1:
+        filters[facet_key]["facet_filter"] = {
+            "query": {
+                "query_string": {"query": tokens[1]}
             }
         }
-    }
+    return filters
 
 
 def _parse_base_facets_expression(tokens):
@@ -146,16 +154,15 @@ def _construct_grammar():
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
-
     facet_compare_expression = key + operator + value
     facet_compare_expression.setParseAction(_parse_facet_compare_expression)
 
-    facet_base_logical_expression = (facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
+    facet_base_logical_expression = (
+                                        facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
         _parse_logical_expression) | facet_compare_expression
 
     facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | facet_base_logical_expression
-
 
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
