@@ -166,19 +166,19 @@ def _construct_grammar():
     # The below 3 lines describe how a facet expression should be
     single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + facet_logical_expression +
                                                                        Word(')').suppress())
-    base_facets_expression = OneOrMore(single_facet_expression.setParseAction(
-        _parse_single_facet_expression) + Optional(',').suppress())
-    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression.setParseAction(
-        _parse_base_facets_expression) + Word(']').suppress()
+    single_facet_expression.setParseAction(_parse_single_facet_expression)
+    base_facets_expression = OneOrMore(single_facet_expression + Optional(',').suppress())
+    base_facets_expression.setParseAction(_parse_base_facets_expression)
+    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression + Word(']').suppress()
 
     # The below line describes how the type expression should be.
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
+    type_expression.setParseAction(_parse_type_expression)
 
     # The below lines describes the final grammar
-    base_expression = Optional(
-        type_expression.setParseAction(_parse_type_expression)) + Optional(facets_expression) + ZeroOrMore(
-        logical_expression + Optional(logical_operator)).setParseAction(
+    base_expression = Optional(type_expression) + Optional(facets_expression) + \
+        ZeroOrMore(logical_expression + Optional(logical_operator)).setParseAction(
         _parse_one_or_more_logical_expressions)
 
     base_expression.setParseAction(_parse_type_logical_facets_expression)
