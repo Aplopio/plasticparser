@@ -149,7 +149,7 @@ def _construct_grammar():
     compare_expression.setParseAction(_parse_compare_expression)
 
     base_logical_expression = (compare_expression + logical_operator + compare_expression).setParseAction(
-        _parse_logical_expression) | compare_expression
+        _parse_logical_expression) | compare_expression | value
 
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
@@ -159,7 +159,7 @@ def _construct_grammar():
 
     facet_base_logical_expression = (
                                         facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
-        _parse_logical_expression) | facet_compare_expression
+        _parse_logical_expression) | facet_compare_expression | value
 
     facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | facet_base_logical_expression

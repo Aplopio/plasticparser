@@ -42,6 +42,9 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(self.get_query_string(parsed_string), "(abc:>def AND mms:>asd) AND (abc:>def AND mms:>asd)")
 
+        query_string = "abc def"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(self.get_query_string(parsed_string), "abc AND def")
 
     def test_should_parse_logical_expression_with_type_and_facets(self):
         query_string = "type:def facets: [ aaa(abc:def) ] (abc:>def mms:>asd)"
