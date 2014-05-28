@@ -145,36 +145,37 @@ def _construct_grammar():
     value = quoted_word | word
     key = Word(unicode_printables,
                excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
+
+    # The below 4 lines describes logical operators grammar having compare expression or just values
     compare_expression = key + operator + value
     compare_expression.setParseAction(_parse_compare_expression)
-
     base_logical_expression = (compare_expression + logical_operator + compare_expression).setParseAction(
         _parse_logical_expression) | compare_expression | value
-
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
+    # The below 4 lines, specific to facets describes logical operators grammar having compare expression or just values
     facet_compare_expression = key + operator + value
     facet_compare_expression.setParseAction(_parse_facet_compare_expression)
-
-    facet_base_logical_expression = (
-                                        facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
+    facet_base_logical_expression = (facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
         _parse_logical_expression) | facet_compare_expression | value
-
     facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | facet_base_logical_expression
 
+
+    # The below 3 lines describe how a facet expression should be
+    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + facet_logical_expression +
+                                                                       Word(')').suppress())
+    base_facets_expression = OneOrMore(single_facet_expression.setParseAction(
+        _parse_single_facet_expression) + Optional(',').suppress())
+    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression.setParseAction(
+        _parse_base_facets_expression) + Word(']').suppress()
+
+    # The below line describes how the type expression should be.
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
 
-    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + facet_logical_expression + Word(
-        ')').suppress())
-    base_facets_expression = OneOrMore(
-        single_facet_expression.setParseAction(_parse_single_facet_expression) + Optional(',').suppress()) + Word(
-        ']').suppress()
-    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression.setParseAction(
-        _parse_base_facets_expression)
-
+    # The below lines describes the final grammar
     base_expression = Optional(
         type_expression.setParseAction(_parse_type_expression)) + Optional(facets_expression) + ZeroOrMore(
         logical_expression + Optional(logical_operator)).setParseAction(
