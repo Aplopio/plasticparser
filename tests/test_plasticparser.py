@@ -24,7 +24,8 @@ class PlasticParserTestCase(unittest.TestCase):
                     },
                 }
             },
-            "facets": {}
+            "facets": {},
+            "sort": []
         }
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
@@ -52,7 +53,8 @@ class PlasticParserTestCase(unittest.TestCase):
                     }
                 }
             },
-            "facets": {}
+            "facets": {},
+            "sort": []
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
@@ -81,7 +83,8 @@ class PlasticParserTestCase(unittest.TestCase):
                     }
                 }
             },
-            "facets": {}
+            "facets": {},
+            "sort": []
         }
 
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
@@ -131,7 +134,8 @@ class PlasticParserTestCase(unittest.TestCase):
                         'field': 'bbb'
                     }
                 }
-            }
+            },
+            'sort': []
         }
 
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
@@ -144,7 +148,8 @@ class PlasticParserTestCase(unittest.TestCase):
             'and': [{"client_id": 1},
                     {"user_id": 2}],
             'or': [{"assigned_to": ["/api/v1/users/5/"]}],
-            'not': []
+            'not': [],
+            'sort': [{"created_on": "desc"}]
         }
         expected_query_dsl = {
             "query": {
@@ -177,7 +182,8 @@ class PlasticParserTestCase(unittest.TestCase):
                     }
                 }
             },
-            "facets": {}
+            "facets": {},
+            "sort": [{"created_on": "desc"}]
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
