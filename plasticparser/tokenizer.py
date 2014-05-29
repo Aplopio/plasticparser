@@ -150,7 +150,7 @@ def _construct_grammar():
     compare_expression = key + operator + value
     compare_expression.setParseAction(_parse_compare_expression)
     base_logical_expression = (compare_expression + logical_operator + compare_expression).setParseAction(
-        _parse_logical_expression) | compare_expression | value
+        _parse_logical_expression) | compare_expression | Word(unicode_printables)
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 

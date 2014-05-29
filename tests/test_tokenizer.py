@@ -46,6 +46,11 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(self.get_query_string(parsed_string), "abc AND def")
 
+        query_string = 'abc (python or london) (abc:def dd:ff)'
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(self.get_query_string(parsed_string), u'abc AND (python OR london) AND (abc:def AND dd:ff)')
+
+
     def test_should_parse_logical_expression_with_type_and_facets(self):
         query_string = "type:def facets: [ aaa(abc:def) ] (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
@@ -96,6 +101,7 @@ class TokenizerTest(unittest.TestCase):
         query_string = "type:def facets: [ aaa ] (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
-        'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                     'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}},
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}},
                                          'facets': {'aaa': {'terms': {'field': 'aaa'}}}})
+
