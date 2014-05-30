@@ -46,9 +46,9 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(self.get_query_string(parsed_string), "abc AND def")
 
-        query_string = 'abc (python or london) (abc:def dd:ff)'
+        query_string = 'abc (python or london) (abc:def dd:ff) [fgdgdfg]'
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), u'abc AND (python OR london) AND (abc:def AND dd:ff)')
+        self.assertEqual(self.get_query_string(parsed_string), u'abc AND (python OR london) AND (abc:def AND dd:ff) AND \[fgdgdfg\]')
 
 
     def test_should_parse_logical_expression_with_type_and_facets(self):

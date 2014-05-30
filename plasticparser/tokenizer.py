@@ -27,10 +27,19 @@ def sanitize_facet_value(value):
             value = value.replace(char, u'\{}'.format(char))
     return value
 
+def sanitize_free_text(value):
+    if not isinstance(value, basestring):
+        return value
+    for char in RESERVED_CHARS:
+        if char not in ['(', ')']:
+            value = value.replace(char, u'\{}'.format(char))
+    return value
 
 def _replace_with_and(tokens, i):
     tokens[i] = 'AND'
 
+def _parse_free_text(tokens):
+    return sanitize_free_text(tokens[0])
 
 def _parse_compare_expression(tokens):
     return u"{}{}{}".format(tokens[0], tokens[1], sanitize_value(tokens[2]))
@@ -150,7 +159,7 @@ def _construct_grammar():
     compare_expression = key + operator + value
     compare_expression.setParseAction(_parse_compare_expression)
     base_logical_expression = (compare_expression + logical_operator + compare_expression).setParseAction(
-        _parse_logical_expression) | compare_expression | Word(unicode_printables)
+        _parse_logical_expression) | compare_expression | Word(unicode_printables).setParseAction(_parse_free_text)
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | base_logical_expression
 
