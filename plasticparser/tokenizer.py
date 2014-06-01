@@ -10,6 +10,27 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '^', '"', '~', '*',
                   '?', '/', ':')
 
+class Facets(object):
+    def __init__(self, facets_dsl):
+        self.facets_dsl = facets_dsl
+
+    def get_query(self):
+        return self.facets_dsl
+
+class Type(object):
+    def __init__(self, type_dsl):
+        self.type_dsl = type_dsl
+
+    def get_query(self):
+        return self.type_dsl
+
+class Query(object):
+    def __init__(self, query):
+        self.query = query
+
+    def get_query(self):
+        return self.query.strip()
+
 
 def sanitize_value(value):
     if not isinstance(value, basestring):
@@ -36,7 +57,10 @@ def sanitize_free_text(value):
     return value
 
 def _replace_with_and(tokens, i):
-    tokens[i] = 'AND'
+    if i < len(tokens)-1:
+        tokens[i] = 'AND'
+    else:
+        del tokens[i]
 
 def _parse_free_text(tokens):
     return sanitize_free_text(tokens[0])
@@ -51,7 +75,7 @@ def _parse_facet_compare_expression(tokens):
 
 def _parse_logical_expression(tokens):
     if ' ' in tokens.asList():
-        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
+        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
     return u'{} {} {}'.format(tokens[0], tokens[1], tokens[2])
 
 
@@ -60,18 +84,29 @@ def _parse_paren_base_logical_expression(tokens):
 
 
 def default_parse_func(tokens):
-    if ' ' in tokens.asList():
-        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x == " "]
-    return u' '.join(tokens)
+    token_list = tokens.asList()
+    return_list = []
+    for token in token_list:
+        if isinstance(token, Facets):
+            return_list.append(token)
+            token_list.remove(token)
+        if isinstance(token, type):
+            return_list.append(token)
+            token_list.remove(token)
+    if ' ' in token_list:
+        [_replace_with_and(token_list, i) for i, x in enumerate(token_list) if x.isspace()]
+    query = Query(' '.join(token_list))
+    return_list.append(query)
+    return return_list
 
 
 _parse_one_or_more_logical_expressions = _parse_base_logical_expression = default_parse_func
 
 
 def _parse_type_expression(tokens):
-    return {
+    return Type({
         "type": {"value": tokens[1]}
-    }
+    })
 
 
 def _parse_type_logical_facets_expression(tokens):
@@ -79,18 +114,14 @@ def _parse_type_logical_facets_expression(tokens):
     should_list = []
     must_not_list = []
     facets = {}
-    if isinstance(tokens[0], dict):
-        type_filter = tokens[0]
-        if type_filter.keys()[0] == 'type':
-            must_list.append(type_filter)
-        else:
-            facets = tokens[0]
-        query = tokens[1]
-        if isinstance(tokens[1], dict):
-            facets = tokens[1]
-            query = tokens[2]
-    else:
-        query = tokens[0]
+    for token in tokens.asList():
+        if isinstance(token, Query):
+            query = token.get_query()
+        if isinstance(token, Facets):
+            facets = token.get_query()
+        if isinstance(token, Type):
+            type = token.get_query()
+            must_list.append(type)
 
     query_dsl = {
         "query": {
@@ -141,7 +172,7 @@ def _parse_base_facets_expression(tokens):
     facets = {}
     for tok in tokens.asList():
         facets.update(tok)
-    return facets
+    return Facets(facets)
 
 
 def _construct_grammar():
@@ -186,8 +217,8 @@ def _construct_grammar():
     type_expression.setParseAction(_parse_type_expression)
 
     # The below lines describes the final grammar
-    base_expression = Optional(type_expression) + Optional(facets_expression) + \
-        ZeroOrMore(logical_expression + Optional(logical_operator)).setParseAction(
+    base_expression = Optional(type_expression) +  \
+        ZeroOrMore(facets_expression | logical_expression + Optional(logical_operator)).setParseAction(
         _parse_one_or_more_logical_expressions)
 
     base_expression.setParseAction(_parse_type_logical_facets_expression)

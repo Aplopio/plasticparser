@@ -70,7 +70,7 @@ class TokenizerTest(unittest.TestCase):
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_logical_expression_with_type_multi_facets(self):
-        query_string = "type:def facets: [ aaa.bb(abc:def) bbb(cc:ddd) ] (abc:>def mms:>asd)"
+        query_string = "type:def (abc:>def mms:>asd)    facets: [ aaa.bb(abc:def) bbb(cc:ddd) ] "
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
@@ -90,7 +90,7 @@ class TokenizerTest(unittest.TestCase):
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_basic_logical_expression_facets_with_no_facet_filters(self):
-        query_string = "type:def facets: [ aaa.bb ] (abc:>def mms:>asd)"
+        query_string = "type:def (abc:>def mms:>asd) facets: [ aaa.bb ]"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
@@ -98,7 +98,7 @@ class TokenizerTest(unittest.TestCase):
                                          'facets': {'aaa.bb': {'terms': {'field': 'bb'}, 'nested': u'aaa'}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(self):
-        query_string = "type:def facets: [ aaa ] (abc:>def mms:>asd)"
+        query_string = "type:def (abc:>def mms:>asd) facets: [ aaa ]"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
