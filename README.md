@@ -7,7 +7,7 @@ An Elastic Search Query Parser
 ```python
 from plasticparser import plasticparser
 
-query_string = 'type:candidates facets:[location] (name:"John Doe" starred:true) (python or java)'
+query_string = 'type:candidates (name:"John Doe" starred:true) (python or java) facets:[location]'
 global_filters = {
             'and': [{"client_id": 1},
                     {"user_id": 2}],
