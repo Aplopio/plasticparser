@@ -6,8 +6,9 @@ from plasticparser import tokenizer
 class TokenizerTest(unittest.TestCase):
     def test_should_sanitize_value(self):
         for char in tokenizer.RESERVED_CHARS:
-            sanitized_value = tokenizer.sanitize_value("abc{}".format(char))
-            self.assertEqual(sanitized_value, 'abc\\{}'.format(char))
+            if char not in '(':
+                sanitized_value = tokenizer.sanitize_value("abc{}".format(char))
+                self.assertEqual(sanitized_value, 'abc\\{}'.format(char))
 
     def get_query_string(self, parsed_dict):
         return parsed_dict['query']['filtered']['query']['query_string']['query']
@@ -108,3 +109,7 @@ class TokenizerTest(unittest.TestCase):
                          'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}},
                                          'facets': {'aaa': {'terms': {'field': 'aaa', 'size': 1000}}}})
 
+    def test_should_parse_multiword_field_value(self):
+        query_string = "name:(krace OR kumar) abc:>def"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string['query']['filtered']['query']['query_string']['query'], u'name:(krace OR kumar) AND abc:>def')

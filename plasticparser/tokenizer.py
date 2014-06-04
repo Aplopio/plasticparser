@@ -36,7 +36,8 @@ def sanitize_value(value):
     if not isinstance(value, basestring):
         return value
     for char in RESERVED_CHARS:
-        value = value.replace(char, u'\{}'.format(char))
+        if char not in "(":
+            value = value.replace(char, u'\{}'.format(char))
     return value
 
 
