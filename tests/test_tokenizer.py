@@ -89,7 +89,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}},
                                                         'query': {'query_string': {
-                                                            'query': u'title:hello OR description:\\"world\\"'}}}},
+                                                            'query': u'title:hello OR description:"world"'}}}},
                                  'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
 
