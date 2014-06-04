@@ -160,7 +160,7 @@ def _parse_single_facet_expression(tokens):
         filters[facet_key]['nested'] = nested_field
 
     field = "{}_nonngram".format(field)
-    filters[facet_key]["terms"] = {"field": field, "size": 1000}
+    filters[facet_key]["terms"] = {"field": field, "size": 20}
     if len(tokens) > 1:
         filters[facet_key]["facet_filter"] = {
             "query": {
