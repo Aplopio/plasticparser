@@ -119,7 +119,7 @@ class PlasticParserTestCase(unittest.TestCase):
                         }
                     },
                     'terms': {
-                        'field': 'bb',
+                        'field': 'bb_nonngram',
                         'size': 1000
                     },
                     'nested': u'aaa'},
@@ -132,7 +132,7 @@ class PlasticParserTestCase(unittest.TestCase):
                         }
                     },
                     'terms': {
-                        'field': 'bbb',
+                        'field': 'bbb_nonngram',
                         'size': 1000
                     }
                 }
