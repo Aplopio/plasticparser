@@ -97,10 +97,10 @@ class TokenizerTest(unittest.TestCase):
         query_string = "type:def (abc:>def mms:>asd) facets: [ aaa.bb ]"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
-        'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                     'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
-                         'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20},
-                                    'nested': u'aaa'}}})
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+            'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20},
+                       'nested': u'aaa'}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(self):
         query_string = "type:def (abc:>def mms:>asd) facets: [ aaa ]"
@@ -113,4 +113,14 @@ class TokenizerTest(unittest.TestCase):
     def test_should_parse_multiword_field_value(self):
         query_string = "name:(krace OR kumar) abc:>def"
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(parsed_string['query']['filtered']['query']['query_string']['query'], u'name:(krace OR kumar) AND abc:>def')
+        self.assertEqual(parsed_string['query']['filtered']['query']['query_string']['query'],
+                         u'name:(krace OR kumar) AND abc:>def')
+
+    def test_should_parse_logical_expression_with_type_and_facets_2(self):
+        query_string = "facets: [aaa(abc:(def fff))]"
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_parse_string = {
+        'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}}, 'facets': {
+        'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:(def AND fff)'}}},
+                'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
+        self.assertEqual(parsed_string, expected_parse_string)
