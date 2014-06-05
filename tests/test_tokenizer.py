@@ -117,10 +117,10 @@ class TokenizerTest(unittest.TestCase):
                          u'name:(krace OR kumar) AND abc:>def')
 
     def test_should_parse_logical_expression_with_type_and_facets_2(self):
-        query_string = "facets: [aaa(abc:(def fff))]"
+        query_string = "facets: [aaa(a:b abc:(def fff) c:d e:(f))]"
         parsed_string = tokenizer.tokenize(query_string)
         expected_parse_string = {
         'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}}, 'facets': {
-        'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:(def AND fff)'}}},
+        'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b abc:(def AND fff) c:d e:(f)'}}},
                 'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_parse_string)
