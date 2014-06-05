@@ -77,7 +77,7 @@ def _parse_facet_compare_expression(tokens):
 def _parse_logical_expression(tokens):
     if ' ' in tokens.asList():
         [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
-    return u'{} {} {}'.format(tokens[0], tokens[1], tokens[2])
+    return u' '.join(tokens.asList())
 
 
 def _parse_paren_base_logical_expression(tokens):
@@ -185,6 +185,9 @@ def join_words(tokens):
 def join_brackets(tokens):
     return u''.join(tokens.asList())
 
+def _parse_one_or_more_facets_expression(tokens):
+    return u' '.join(tokens)
+
 def _construct_grammar():
     unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                                   if not unichr(c).isspace())
@@ -210,14 +213,14 @@ def _construct_grammar():
     # The below 4 lines, specific to facets describes logical operators grammar having compare expression or just values
     facet_compare_expression = key + operator + paren_value | value
     facet_compare_expression.setParseAction(_parse_facet_compare_expression)
-    facet_base_logical_expression = (facet_compare_expression + logical_operator + facet_compare_expression).setParseAction(
-        _parse_logical_expression) | facet_compare_expression | value
+    facet_base_logical_expression = (facet_compare_expression + Optional(logical_operator)).setParseAction(
+        _parse_logical_expression) | value
     facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | facet_base_logical_expression
 
 
     # The below 3 lines describe how a facet expression should be
-    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + facet_logical_expression +
+    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + OneOrMore(facet_logical_expression).setParseAction(_parse_one_or_more_facets_expression) +
                                                                        Word(')').suppress())
     single_facet_expression.setParseAction(_parse_single_facet_expression)
     base_facets_expression = OneOrMore(single_facet_expression + Optional(',').suppress())
