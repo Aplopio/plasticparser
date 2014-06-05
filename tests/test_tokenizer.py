@@ -24,33 +24,33 @@ class TokenizerTest(unittest.TestCase):
 
         query_string = "abc:>def mms:>asd"
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), "abc:>def mms:>asd")
+        self.assertEqual(self.get_query_string(parsed_string), "abc:>def AND mms:>asd")
 
         query_string = "(abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), "(abc:>def mms:>asd)")
+        self.assertEqual(self.get_query_string(parsed_string), "(abc:>def AND mms:>asd)")
 
         query_string = "abc:>def mms:>asd (abc:def or pqe:123) and blab:blab"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(self.get_query_string(parsed_string),
-                         "abc:>def mms:>asd (abc:def OR pqe:123) AND blab:blab")
+                         "abc:>def AND mms:>asd AND (abc:def OR pqe:123) AND blab:blab")
 
         query_string = "( abc:>def mms:>asd ) (abc:>def mms:>asd) "
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), "(abc:>def mms:>asd) (abc:>def mms:>asd)")
+        self.assertEqual(self.get_query_string(parsed_string), "(abc:>def AND mms:>asd) AND (abc:>def AND mms:>asd)")
 
         query_string = "( abc:>def mms:>asd ) and (abc:>def mms:>asd) "
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), "(abc:>def mms:>asd) AND (abc:>def mms:>asd)")
+        self.assertEqual(self.get_query_string(parsed_string), "(abc:>def AND mms:>asd) AND (abc:>def AND mms:>asd)")
 
         query_string = "abc def"
         parsed_string = tokenizer.tokenize(query_string)
-        self.assertEqual(self.get_query_string(parsed_string), "abc def")
+        self.assertEqual(self.get_query_string(parsed_string), "abc AND def")
 
         query_string = 'abc (python or london) (abc:def dd:ff) [fgdgdfg]'
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(self.get_query_string(parsed_string),
-                         u'abc (python OR london) (abc:def dd:ff) \[fgdgdfg\]')
+                         u'abc AND (python OR london) AND (abc:def AND dd:ff) AND \[fgdgdfg\]')
 
 
     def test_should_parse_logical_expression_with_type_and_facets(self):
@@ -58,8 +58,8 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def mms:>asd)', "default_operator": "AND"}}}}, 'facets': {
-            'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:def', "default_operator": "AND"}}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+            'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
                     'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
 
         self.assertEqual(parsed_string, expected_query_string)
@@ -69,7 +69,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def mms:>asd)', "default_operator": "AND"}}}}, 'facets': {}}
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_logical_expression_with_type_multi_facets(self):
@@ -77,10 +77,10 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def mms:>asd)', "default_operator": "AND"}}}}, 'facets': {
-            'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def', "default_operator": "AND"}}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+            'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
                        'terms': {'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'},
-            'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd', "default_operator": "AND"}}},
+            'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd'}}},
                     'terms': {'field': 'bbb_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_query_string)
 
@@ -89,7 +89,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}},
                                                         'query': {'query_string': {
-                                                            'query': u'title:hello OR description:"world"', "default_operator": "AND"}}}},
+                                                            'query': u'title:hello OR description:"world"'}}}},
                                  'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
 
@@ -98,7 +98,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def mms:>asd)', "default_operator": "AND"}}}}, 'facets': {
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
             'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20},
                        'nested': u'aaa'}}})
 
@@ -107,20 +107,20 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string,
                          {'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}},
-                          'facets': {'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b c:d e:f',"default_operator": "AND"}}},
+                          'facets': {'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b c:d e:f'}}},
                                              'terms': {'field': 'aaa_nonngram', 'size': 20}}}})
 
     def test_should_parse_multiword_field_value(self):
         query_string = "name:(krace OR kumar) abc:>def"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string['query']['filtered']['query']['query_string']['query'],
-                         u'name:(krace OR kumar) abc:>def')
+                         u'name:(krace OR kumar) AND abc:>def')
 
     def test_should_parse_logical_expression_with_type_and_facets_2(self):
         query_string = "facets: [aaa(a:b abc:(def fff) c:d e:(f))]"
         parsed_string = tokenizer.tokenize(query_string)
         expected_parse_string = {
         'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}}, 'facets': {
-        'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b abc:(def fff) c:d e:(f)', "default_operator": "AND"}}},
+        'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b abc:(def AND fff) c:d e:(f)'}}},
                 'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_parse_string)

@@ -13,9 +13,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello OR description:"world"',
-                            "default_operator": "AND"
-                        }
+                            "query": 'title:hello OR description:"world"'}
                     },
                     "filter": {
                         "bool": {
@@ -39,8 +37,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "due_date:<1234 due_date:>1234 due_date:>=1234 (due_date:>=1234)",
-                            "default_operator": "AND"
+                            "query": "due_date:<1234 AND due_date:>1234 AND due_date:>=1234 AND (due_date:>=1234)"
                         }
                     },
                     "filter": {
@@ -70,8 +67,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello description:"world"',
-                            "default_operator": "AND"
+                            "query": 'title:hello AND description:"world"'
                         }
                     },
                     "filter": {
@@ -118,8 +114,7 @@ class PlasticParserTestCase(unittest.TestCase):
                     'facet_filter': {
                         'query': {
                             'query_string': {
-                                'query': u'abc:def',
-                                "default_operator": "AND"
+                                'query': u'abc:def'
                             }
                         }
                     },
@@ -132,8 +127,7 @@ class PlasticParserTestCase(unittest.TestCase):
                     'facet_filter': {
                         'query': {
                             'query_string': {
-                                'query': u'cc:ddd',
-                                "default_operator": "AND"
+                                'query': u'cc:ddd'
                             }
                         }
                     },
@@ -164,8 +158,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello description:"world"',
-                            "default_operator": "AND"
+                            "query": 'title:hello AND description:"world"'
                         }
                     },
                     "filter": {
