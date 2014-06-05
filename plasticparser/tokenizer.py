@@ -57,11 +57,8 @@ def sanitize_free_text(value):
             value = value.replace(char, u'\{}'.format(char))
     return value
 
-def _replace_with_and(tokens, i):
-    if i < len(tokens)-1:
-        tokens[i] = 'AND'
-    else:
-        del tokens[i]
+def _replace_with_default_op(tokens, i):
+    del tokens[i]
 
 def _parse_free_text(tokens):
     return sanitize_free_text(tokens[0])
@@ -76,7 +73,7 @@ def _parse_facet_compare_expression(tokens):
 
 def _parse_logical_expression(tokens):
     if ' ' in tokens.asList():
-        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
+        [_replace_with_default_op(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
     return u' '.join(tokens.asList())
 
 
@@ -95,7 +92,7 @@ def default_parse_func(tokens):
             return_list.append(token)
             token_list.remove(token)
     if ' ' in token_list:
-        [_replace_with_and(token_list, i) for i, x in enumerate(token_list) if x.isspace()]
+        [_replace_with_default_op(token_list, i) for i, x in enumerate(token_list) if x.isspace()]
     query = Query(' '.join(token_list))
     return_list.append(query)
     return return_list
@@ -141,7 +138,8 @@ def _parse_type_logical_facets_expression(tokens):
     if query:
         query_dsl["query"]["filtered"]["query"] = {
             "query_string": {
-                "query": query
+                "query": query,
+                "default_operator": "AND"
             }
         }
     return query_dsl
@@ -164,7 +162,8 @@ def _parse_single_facet_expression(tokens):
     if len(tokens) > 1:
         filters[facet_key]["facet_filter"] = {
             "query": {
-                "query_string": {"query": tokens[1]}
+                "query_string": {"query": tokens[1],
+                                 "default_operator": "AND"}
             }
         }
     return filters
@@ -178,7 +177,7 @@ def _parse_base_facets_expression(tokens):
 
 def join_words(tokens):
     if ' ' in tokens.asList():
-        [_replace_with_and(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
+        [_replace_with_default_op(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
     return u' '.join(tokens.asList())
 
 
