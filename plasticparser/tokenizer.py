@@ -57,8 +57,6 @@ def sanitize_free_text(value):
             value = value.replace(char, u'\{}'.format(char))
     return value
 
-def _replace_with_default_op(tokens, i):
-    del tokens[i]
 
 def _parse_free_text(tokens):
     return sanitize_free_text(tokens[0])
@@ -72,8 +70,6 @@ def _parse_facet_compare_expression(tokens):
 
 
 def _parse_logical_expression(tokens):
-    if ' ' in tokens.asList():
-        [_replace_with_default_op(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
     return u' '.join(tokens.asList())
 
 
@@ -91,8 +87,6 @@ def default_parse_func(tokens):
         if isinstance(token, type):
             return_list.append(token)
             token_list.remove(token)
-    if ' ' in token_list:
-        [_replace_with_default_op(token_list, i) for i, x in enumerate(token_list) if x.isspace()]
     query = Query(' '.join(token_list))
     return_list.append(query)
     return return_list
@@ -177,8 +171,6 @@ def _parse_base_facets_expression(tokens):
     return Facets(facets)
 
 def join_words(tokens):
-    if ' ' in tokens.asList():
-        [_replace_with_default_op(tokens, i) for i, x in enumerate(tokens.asList()) if x.isspace()]
     return u' '.join(tokens.asList())
 
 
@@ -194,7 +186,7 @@ def _construct_grammar():
     word = Word(unicode_printables, excludeChars=[')'])
     quoted_word = QuotedString('"', unquoteResults=False, escChar='\\')
     operator = oneOf(u": :< :> :<= :>= :=")
-    logical_operator = CaselessLiteral('AND') | CaselessLiteral('OR') | White()
+    logical_operator = CaselessLiteral('AND') | CaselessLiteral('OR') | White().suppress()
     value = quoted_word | word
     key = Word(unicode_printables,
                excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
