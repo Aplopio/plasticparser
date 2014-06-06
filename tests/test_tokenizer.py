@@ -80,7 +80,9 @@ class TokenizerTest(unittest.TestCase):
                                     'type': {
                                         'value': 'def'}}]}}, 'query': {
                         'query_string': {
-                            'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {
+                            'query': u'(abc:>def AND mms:>asd)',
+                            "default_operator": "and"}}}},
+            'facets': {
                 'aaa': {
                     'facet_filter': {
                         'query': {
@@ -124,13 +126,16 @@ class TokenizerTest(unittest.TestCase):
                                     'type': {
                                         'value': 'def'}}]}}, 'query': {
                         'query_string': {
-                            'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {
+                            'query': u'(abc:>def AND mms:>asd)',
+                            "default_operator": "and"}}}},
+            'facets': {
                 'aaa.bb': {
                     'facet_filter': {
                         'query': {
                             'query_string': {
                                 'query': u'abc:def'}}}, 'terms': {
-                        'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'}, 'bbb': {
+                        'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'},
+                'bbb': {
                     'facet_filter': {
                         'query': {
                             'query_string': {
@@ -171,10 +176,13 @@ class TokenizerTest(unittest.TestCase):
                                         'type': {
                                             'value': 'def'}}]}}, 'query': {
                             'query_string': {
-                                'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {
+                                'query': u'(abc:>def AND mms:>asd)',
+                                "default_operator": "and"}}}},
+                'facets': {
                     'aaa.bb': {
                         'terms': {
-                            'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'}}})
+                            'field': 'bb_nonngram', 'size': 20},
+                        'nested': u'aaa'}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(
             self):
@@ -191,7 +199,9 @@ class TokenizerTest(unittest.TestCase):
                                         'type': {
                                             'value': 'def'}}]}}, 'query': {
                             'query_string': {
-                                'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {
+                                'query': u'(abc:>def AND mms:>asd)',
+                                "default_operator": "and"}}}},
+                'facets': {
                     'aaa': {
                         'terms': {
                             'field': 'aaa_nonngram', 'size': 20}}}})
