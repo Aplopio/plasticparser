@@ -39,8 +39,8 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": "due_date:<1234 AND due_date:>1234"
-                            " AND due_date:>=1234 AND (due_date:>=1234)",
+                            "query": "due_date:<1234 due_date:>1234"
+                            " due_date:>=1234 (due_date:>=1234)",
                             "default_operator": "and"
                         }
                     },
@@ -71,7 +71,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello AND description:"world"',
+                            "query": 'title:hello description:"world"',
                             "default_operator": "and"
                         }
                     },
@@ -119,7 +119,8 @@ class PlasticParserTestCase(unittest.TestCase):
                     'facet_filter': {
                         'query': {
                             'query_string': {
-                                'query': u'abc:def'
+                                'query': u'abc:def',
+                                "default_operator": "and"
                             }
                         }
                     },
@@ -132,7 +133,8 @@ class PlasticParserTestCase(unittest.TestCase):
                     'facet_filter': {
                         'query': {
                             'query_string': {
-                                'query': u'cc:ddd'
+                                'query': u'cc:ddd',
+                                "default_operator": "and"
                             }
                         }
                     },
@@ -163,7 +165,7 @@ class PlasticParserTestCase(unittest.TestCase):
                 "filtered": {
                     "query": {
                         "query_string": {
-                            "query": 'title:hello AND description:"world"',
+                            "query": 'title:hello description:"world"',
                             "default_operator": "and"
                         }
                     },
