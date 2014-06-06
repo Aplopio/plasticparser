@@ -4,7 +4,6 @@ from plasticparser import tokenizer
 
 
 class TokenizerTest(unittest.TestCase):
-
     def test_should_sanitize_value(self):
         for char in tokenizer.RESERVED_CHARS:
             if char not in '(':
@@ -76,19 +75,19 @@ class TokenizerTest(unittest.TestCase):
                     'filter': {
                         'bool': {
                             'should': [], 'must_not': [], 'must': [
-                                {
-                                    'type': {
-                                        'value': 'def'}}]}}, 'query': {
-                        'query_string': {
-                            'query': u'(abc:>def AND mms:>asd)',
-                            "default_operator": "and"}}}},
+                            {
+                                'type': {
+                                    'value': 'def'}}]}}, 'query': {
+                    'query_string': {
+                        'query': u'(abc:>def AND mms:>asd)',
+                        "default_operator": "and"}}}},
             'facets': {
                 'aaa': {
                     'facet_filter': {
                         'query': {
                             'query_string': {
                                 'query': u'abc:def'}}}, 'terms': {
-                        'field': 'aaa_nonngram', 'size': 20}}}}
+                    'field': 'aaa_nonngram', 'size': 20}}}}
 
         self.assertEqual(parsed_string, expected_query_string)
 
@@ -122,25 +121,25 @@ class TokenizerTest(unittest.TestCase):
                     'filter': {
                         'bool': {
                             'should': [], 'must_not': [], 'must': [
-                                {
-                                    'type': {
-                                        'value': 'def'}}]}}, 'query': {
-                        'query_string': {
-                            'query': u'(abc:>def AND mms:>asd)',
-                            "default_operator": "and"}}}},
+                            {
+                                'type': {
+                                    'value': 'def'}}]}}, 'query': {
+                    'query_string': {
+                        'query': u'(abc:>def AND mms:>asd)',
+                        "default_operator": "and"}}}},
             'facets': {
                 'aaa.bb': {
                     'facet_filter': {
                         'query': {
                             'query_string': {
                                 'query': u'abc:def'}}}, 'terms': {
-                        'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'},
+                    'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'},
                 'bbb': {
                     'facet_filter': {
                         'query': {
                             'query_string': {
                                 'query': u'cc:ddd'}}}, 'terms': {
-                        'field': 'bbb_nonngram', 'size': 20}}}}
+                    'field': 'bbb_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_basic_logical_expression(self):
@@ -166,23 +165,10 @@ class TokenizerTest(unittest.TestCase):
         query_string = "type:def (abc:>def mms:>asd) facets: [ aaa.bb ]"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(
-            parsed_string, {
-                'query': {
-                    'filtered': {
-                        'filter': {
-                            'bool': {
-                                'should': [], 'must_not': [], 'must': [
-                                    {
-                                        'type': {
-                                            'value': 'def'}}]}}, 'query': {
-                            'query_string': {
-                                'query': u'(abc:>def AND mms:>asd)',
-                                "default_operator": "and"}}}},
-                'facets': {
-                    'aaa.bb': {
-                        'terms': {
-                            'field': 'bb_nonngram', 'size': 20},
-                        'nested': u'aaa'}}})
+            parsed_string, {'query': {
+            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)', 'default_operator': 'and'}}}},
+                            'facets': {'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20}}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(
             self):
@@ -195,12 +181,12 @@ class TokenizerTest(unittest.TestCase):
                         'filter': {
                             'bool': {
                                 'should': [], 'must_not': [], 'must': [
-                                    {
-                                        'type': {
-                                            'value': 'def'}}]}}, 'query': {
-                            'query_string': {
-                                'query': u'(abc:>def AND mms:>asd)',
-                                "default_operator": "and"}}}},
+                                {
+                                    'type': {
+                                        'value': 'def'}}]}}, 'query': {
+                        'query_string': {
+                            'query': u'(abc:>def AND mms:>asd)',
+                            "default_operator": "and"}}}},
                 'facets': {
                     'aaa': {
                         'terms': {
@@ -216,7 +202,7 @@ class TokenizerTest(unittest.TestCase):
         query_string = "facets: [aaa(a:b abc:(def fff) c:d e:(f))]"
         parsed_string = tokenizer.tokenize(query_string)
         expected_parse_string = {
-        'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}}, 'facets': {
-        'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b abc:(def AND fff) c:d e:(f)'}}},
-                'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
+            'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}}, 'facets': {
+            'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b abc:(def AND fff) c:d e:(f)'}}},
+                    'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_parse_string)

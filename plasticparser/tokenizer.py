@@ -158,7 +158,6 @@ def _parse_single_facet_expression(tokens):
         nested_keys = facet_key.split(".")
         nested_field = u".".join(nested_keys[:-1])
         field = nested_keys[-1]
-        filters[facet_key]['nested'] = nested_field
 
     field = "{}_nonngram".format(field)
     filters[facet_key]["terms"] = {"field": field, "size": 20}
