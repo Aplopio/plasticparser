@@ -141,7 +141,8 @@ def _parse_type_logical_facets_expression(tokens):
     if query:
         query_dsl["query"]["filtered"]["query"] = {
             "query_string": {
-                "query": query
+                "query": query,
+                "default_operator": "and"
             }
         }
     return query_dsl
@@ -167,6 +168,9 @@ def _parse_single_facet_expression(tokens):
                 "query_string": {"query": tokens[1]}
             }
         }
+
+    if len(tokens) > 1 and "." in facet_key:
+        filters[facet_key]['nested'] = nested_field
     return filters
 
 

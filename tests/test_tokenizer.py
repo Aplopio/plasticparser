@@ -58,7 +58,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {
             'aaa': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
                     'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
 
@@ -69,7 +69,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {}}
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_logical_expression_with_type_multi_facets(self):
@@ -77,7 +77,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)', "default_operator": "and" }}}}, 'facets': {
             'aaa.bb': {'facet_filter': {'query': {'query_string': {'query': u'abc:def'}}},
                        'terms': {'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'},
             'bbb': {'facet_filter': {'query': {'query_string': {'query': u'cc:ddd'}}},
@@ -89,7 +89,9 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_query_string = {'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}},
                                                         'query': {'query_string': {
-                                                            'query': u'title:hello OR description:"world"'}}}},
+                                                            'query': u'title:hello OR description:"world"',
+                                                            "default_operator": "and"
+                                                        }}}},
                                  'facets': {}}
         self.assertEqual(parsed_string, expected_query_string)
 
@@ -98,7 +100,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
         'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                     'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}}, 'facets': {
+                     'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)', "default_operator": "and"}}}}, 'facets': {
                          'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20},
                                     'nested': u'aaa'}}})
 
@@ -107,7 +109,7 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {'query': {
             'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)'}}}},
+                         'query': {'query_string': {'query': u'(abc:>def AND mms:>asd)', "default_operator": "and" }}}},
                                          'facets': {'aaa': {'terms': {'field': 'aaa_nonngram', 'size': 20}}}})
 
     def test_should_parse_multiword_field_value(self):
