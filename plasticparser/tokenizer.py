@@ -262,7 +262,7 @@ def _construct_grammar():
     # The below lines describes the final grammar
     base_expression = Optional(type_expression) +  \
         ZeroOrMore((facets_expression | nested_expression | logical_expression) + Optional(logical_operator)).setParseAction(
-        _parse_one_or_more_logical_expressions)
+            _parse_one_or_more_logical_expressions)
 
     base_expression.setParseAction(_parse_type_logical_facets_expression)
 
