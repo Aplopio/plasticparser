@@ -17,6 +17,13 @@ class Facets(object):
     def get_query(self):
         return self.facets_dsl
 
+class Nested(object):
+    def __init__(self, nested_dsl):
+        self.nested_dsl = nested_dsl
+
+    def get_query(self):
+        return self.nested_dsl
+
 class Type(object):
     def __init__(self, type_dsl):
         self.type_dsl = type_dsl
@@ -30,6 +37,7 @@ class Query(object):
 
     def get_query(self):
         return self.query.strip()
+
 
 
 def sanitize_value(value):
@@ -81,6 +89,9 @@ def default_parse_func(tokens):
     token_list = tokens.asList()
     return_list = []
     for token in token_list:
+        if isinstance(token, Nested):
+            return_list.append(token)
+            token_list.remove(token)
         if isinstance(token, Facets):
             return_list.append(token)
             token_list.remove(token)
@@ -107,6 +118,9 @@ def _parse_type_logical_facets_expression(tokens):
     must_not_list = []
     facets = {}
     for token in tokens.asList():
+        if isinstance(token, Nested):
+            nested = token.get_query()
+            must_list.append(nested)
         if isinstance(token, Query):
             query = token.get_query()
         if isinstance(token, Facets):
@@ -114,7 +128,6 @@ def _parse_type_logical_facets_expression(tokens):
         if isinstance(token, Type):
             type = token.get_query()
             must_list.append(type)
-
     query_dsl = {
         "query": {
             "filtered": {
@@ -180,6 +193,22 @@ def join_brackets(tokens):
 def _parse_one_or_more_facets_expression(tokens):
     return u' '.join(tokens)
 
+def _parse_base_nested_expression(tokens):
+    return tokens[0]
+
+def _parse_single_nested_expression(tokens):
+    return Nested({
+        "nested": {
+            "path": tokens[0],
+            "query": {
+                "query_string": {
+                    "query": tokens[1],
+                    "default_operator": "and"
+                }
+            }
+        }
+    })
+
 def _construct_grammar():
     unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                                   if not unichr(c).isspace())
@@ -190,7 +219,6 @@ def _construct_grammar():
     value = quoted_word | word
     key = Word(unicode_printables,
                excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
-
 
     paren_value = '(' + OneOrMore(logical_operator | value).setParseAction(join_words) + ')'
     paren_value.setParseAction(join_brackets)
@@ -219,6 +247,13 @@ def _construct_grammar():
     base_facets_expression.setParseAction(_parse_base_facets_expression)
     facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression + Word(']').suppress()
 
+    single_nested_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + OneOrMore(facet_logical_expression).setParseAction(_parse_one_or_more_facets_expression) +
+                                                                       Word(')').suppress())
+    single_nested_expression.setParseAction(_parse_single_nested_expression)
+    base_nested_expression = OneOrMore(single_nested_expression + Optional(',').suppress())
+    base_nested_expression.setParseAction(_parse_base_nested_expression)
+    nested_expression = Word('nested:').suppress() + Word('[').suppress() + base_nested_expression + Word(']').suppress()
+
     # The below line describes how the type expression should be.
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
@@ -226,7 +261,7 @@ def _construct_grammar():
 
     # The below lines describes the final grammar
     base_expression = Optional(type_expression) +  \
-        ZeroOrMore(facets_expression | logical_expression + Optional(logical_operator)).setParseAction(
+        ZeroOrMore((facets_expression | nested_expression | logical_expression) + Optional(logical_operator)).setParseAction(
         _parse_one_or_more_logical_expressions)
 
     base_expression.setParseAction(_parse_type_logical_facets_expression)

@@ -198,6 +198,65 @@ class PlasticParserTestCase(unittest.TestCase):
         elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
+    def test_should_return_elastic_search_query_dsl_for_basic_query_with_nested_filters(self):
+        self.maxDiff = None
+        query_string = 'type:help and title:hello description:"world" nested:[metadata_facets(field_value:(no) field_name:(first))]'
+        global_filters = {
+            'and': [{"client_id": 1},
+                    {"user_id": 2}],
+            'or': [{"assigned_to": ["/api/v1/users/5/"]}],
+            'not': [],
+            'sort': [{"created_on": "desc"}]
+        }
+        expected_query_dsl = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": 'title:hello description:"world"',
+                            "default_operator": "and"
+                        }
+                    },
+                    "filter": {
+                        "bool": {
+                            "must": [
+                                {
+                                    'type': {'value': 'help'}
+                                },
+                                {
+                                    "nested": {
+                                        "path": "metadata_facets",
+                                        "query": {
+                                            "query_string": {
+                                                "query": "field_value:(no) field_name:(first)",
+                                                "default_operator": "and"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    'term': {'client_id': 1}
+                                },
+                                {
+                                    'term': {'user_id': 2}
+                                },
+                            ],
+                            "should": [
+                                {
+                                    "term": {"assigned_to": ["/api/v1/users/5/"]}
+                                }
+                            ],
+                            "must_not": []
+                        }
+                    }
+                }
+            },
+            "facets": {},
+            "sort": [{"created_on": "desc"}]
+        }
+        elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
+        self.assertEqual(elastic_query_dsl, expected_query_dsl)
+
 
 class GetDocTypesTest(unittest.TestCase):
     def test_should_return_doc_types_of_query_string_if_any(self):

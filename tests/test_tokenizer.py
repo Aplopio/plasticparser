@@ -166,8 +166,8 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(
             parsed_string, {'query': {
-            'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                         'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
+                'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                             'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
                             'facets': {'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20}}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(
@@ -203,6 +203,18 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         expected_parse_string = {
             'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': []}}}}, 'facets': {
-            'aaa': {'facet_filter': {'query': {'query_string': {'query': u'a:b abc:(def fff) c:d e:(f)', "default_operator": "and"}}},
+            'aaa': {'facet_filter': {
+            'query': {'query_string': {'query': u'a:b abc:(def fff) c:d e:(f)', "default_operator": "and"}}},
                     'terms': {'field': 'aaa_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_parse_string)
+
+    def test_should_parse_nested_expression(self):
+        query_string = "nested:[aaa(a:(bb) abc:(def fff))]"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {'query': {'filtered': {'filter': {'bool': {'should': [], 'must_not': [],
+                                                                                    'must': [{'nested': {'path': 'aaa',
+                                                                                                         'query': {
+                                                                                                         'query_string': {
+                                                                                                         'query': u'a:(bb) abc:(def fff)',
+                                                                                                         'default_operator': 'and'}}}}]}}}},
+                                         'facets': {}})
