@@ -8,7 +8,7 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
                   '{', '}', '[', ']',
                   '^', '~', '*',
-                  '?', '/', ':')
+                  '?', '/')
 
 class Facets(object):
     def __init__(self, facets_dsl):

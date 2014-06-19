@@ -257,6 +257,37 @@ class PlasticParserTestCase(unittest.TestCase):
         elastic_query_dsl = plasticparser.get_query_dsl(query_string, global_filters)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
+    def test_should_return_elastic_search_query_dsl_for_nested_queries(self):
+        query_string = 'type:help first_name:asdasd AND (candidate_messages.comments.title:(yes i will) OR due_date:(1234))'
+        expected_query_dsl = {
+            "query": {
+                "filtered": {
+                    "query": {
+                        "query_string": {
+                            "query": u"first_name:asdasd AND (candidate_messages.comments.title:(yes i will) OR due_date:(1234 ))",
+                            "default_operator": "and"
+                        }
+                    },
+                    "filter": {
+                        "bool": {
+                            "must": [
+                                {
+                                    "type": {"value": "help"}
+                                }
+                            ],
+                            "should": [],
+                            "must_not": []
+                        }
+                    }
+                }
+            },
+            "facets": {},
+            "sort": []
+        }
+        elastic_query_dsl = plasticparser.get_query_dsl(query_string)
+        self.assertEqual(elastic_query_dsl, expected_query_dsl)
+
+
 
 class GetDocTypesTest(unittest.TestCase):
     def test_should_return_doc_types_of_query_string_if_any(self):
