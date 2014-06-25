@@ -1,13 +1,13 @@
 import unittest
 
-from plasticparser import tokenizer
+from plasticparser import tokenizer, grammar_parsers
 
 
 class TokenizerTest(unittest.TestCase):
     def test_should_sanitize_value(self):
-        for char in tokenizer.RESERVED_CHARS:
+        for char in grammar_parsers.RESERVED_CHARS:
             if char not in '(':
-                sanitized_value = tokenizer.sanitize_value(
+                sanitized_value = grammar_parsers.sanitize_value(
                     "abc{}".format(char))
                 self.assertEqual(sanitized_value, 'abc\\{}'.format(char))
 
