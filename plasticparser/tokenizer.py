@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from pyparsing import Word, QuotedString, oneOf, CaselessLiteral, White, OneOrMore, Optional, alphanums, \
-    srange, ZeroOrMore
+from pyparsing import (
+    Word, QuotedString, oneOf, CaselessLiteral, White,
+    OneOrMore, Optional, alphanums, srange, ZeroOrMore)
 
 
 RESERVED_CHARS = ('\\', '+', '-', '&&',
@@ -10,12 +11,14 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '^', '~', '*',
                   '?', '/')
 
+
 class Facets(object):
     def __init__(self, facets_dsl):
         self.facets_dsl = facets_dsl
 
     def get_query(self):
         return self.facets_dsl
+
 
 class Nested(object):
     def __init__(self, nested_dsl):
@@ -24,6 +27,7 @@ class Nested(object):
     def get_query(self):
         return self.nested_dsl
 
+
 class Type(object):
     def __init__(self, type_dsl):
         self.type_dsl = type_dsl
@@ -31,13 +35,13 @@ class Type(object):
     def get_query(self):
         return self.type_dsl
 
+
 class Query(object):
     def __init__(self, query):
         self.query = query
 
     def get_query(self):
         return self.query.strip()
-
 
 
 def sanitize_value(value):
@@ -57,6 +61,7 @@ def sanitize_facet_value(value):
             value = value.replace(char, u'\{}'.format(char))
     return value
 
+
 def sanitize_free_text(value):
     if not isinstance(value, basestring):
         return value
@@ -68,6 +73,7 @@ def sanitize_free_text(value):
 
 def _parse_free_text(tokens):
     return sanitize_free_text(tokens[0])
+
 
 def _parse_compare_expression(tokens):
     return u"{}{}{}".format(tokens[0], tokens[1], sanitize_value(tokens[2]))
@@ -183,6 +189,7 @@ def _parse_base_facets_expression(tokens):
         facets.update(tok)
     return Facets(facets)
 
+
 def join_words(tokens):
     return u' '.join(tokens.asList())
 
@@ -190,11 +197,14 @@ def join_words(tokens):
 def join_brackets(tokens):
     return u''.join(tokens.asList())
 
+
 def _parse_one_or_more_facets_expression(tokens):
     return u' '.join(tokens)
 
+
 def _parse_base_nested_expression(tokens):
     return tokens[0]
+
 
 def _parse_single_nested_expression(tokens):
     return Nested({
@@ -209,61 +219,110 @@ def _parse_single_nested_expression(tokens):
         }
     })
 
-def _construct_grammar():
-    unicode_printables = u''.join(unichr(c) for c in xrange(65536)
-                                  if not unichr(c).isspace())
+
+unicode_printables = u''.join(unichr(c) for c in xrange(65536)
+                              if not unichr(c).isspace())
+
+
+def get_word():
+    return Word(unicode_printables, excludeChars=[')'])
+
+
+def get_value():
     word = Word(unicode_printables, excludeChars=[')'])
     quoted_word = QuotedString('"', unquoteResults=False, escChar='\\')
-    operator = oneOf(u": :< :> :<= :>= :=")
-    logical_operator = CaselessLiteral('AND') | CaselessLiteral('OR') | White().suppress()
-    value = quoted_word | word
-    key = Word(unicode_printables,
-               excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
+    return quoted_word | word
+
+
+def get_key():
+    return Word(unicode_printables,
+                excludeChars=[':', ':>', ':>=', ':<', ':<=', '('])
+
+
+def get_operator():
+    return oneOf(u": :< :> :<= :>= :=")
+
+
+def get_logical_operator():
+    return CaselessLiteral('AND') | CaselessLiteral('OR') | White().suppress()
+
+
+def get_logical_expression():
+    logical_operator = get_logical_operator()
+    compare_expression = get_key() + get_operator() + get_value()
+    compare_expression.setParseAction(_parse_compare_expression)
+    base_logical_expression = (compare_expression + logical_operator +
+                               compare_expression).setParseAction(
+        _parse_logical_expression) | compare_expression | Word(
+        unicode_printables).setParseAction(_parse_free_text)
+    logical_expression = ('(' + base_logical_expression + ')').setParseAction(
+        _parse_paren_base_logical_expression) | base_logical_expression
+    return logical_expression
+
+
+def get_nested_logical_expression():
+    operator = get_operator()
+    logical_operator = get_logical_operator()
+    value = get_value()
+    key = get_key()
 
     paren_value = '(' + OneOrMore(logical_operator | value).setParseAction(join_words) + ')'
     paren_value.setParseAction(join_brackets)
-    # The below 4 lines describes logical operators grammar having compare expression or just values
-    compare_expression = key + operator + value
-    compare_expression.setParseAction(_parse_compare_expression)
-    base_logical_expression = (compare_expression + logical_operator + compare_expression).setParseAction(
-        _parse_logical_expression) | compare_expression | Word(unicode_printables).setParseAction(_parse_free_text)
-    logical_expression = ('(' + base_logical_expression + ')').setParseAction(
-        _parse_paren_base_logical_expression) | base_logical_expression
-
-    # The below 4 lines, specific to facets describes logical operators grammar having compare expression or just values
     facet_compare_expression = key + operator + paren_value | value
     facet_compare_expression.setParseAction(_parse_facet_compare_expression)
     facet_base_logical_expression = (facet_compare_expression + Optional(logical_operator)).setParseAction(
         _parse_logical_expression) | value
     facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
         _parse_paren_base_logical_expression) | facet_base_logical_expression
+    return facet_logical_expression
 
 
-    # The below 3 lines describe how a facet expression should be
-    single_facet_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + OneOrMore(facet_logical_expression).setParseAction(_parse_one_or_more_facets_expression) +
-                                                                       Word(')').suppress())
+def get_facet_expression():
+    facet_logical_expression = get_nested_logical_expression()
+    single_facet_expression = Word(
+        srange("[a-zA-Z0-9_.]")) +\
+        Optional(
+            Word('(').suppress() +
+            OneOrMore(facet_logical_expression).setParseAction(_parse_one_or_more_facets_expression) +
+            Word(')').suppress())
     single_facet_expression.setParseAction(_parse_single_facet_expression)
     base_facets_expression = OneOrMore(single_facet_expression + Optional(',').suppress())
     base_facets_expression.setParseAction(_parse_base_facets_expression)
-    facets_expression = Word('facets:').suppress() + Word('[').suppress() + base_facets_expression + Word(']').suppress()
+    facets_expression = Word('facets:').suppress() + Word('[').suppress() +\
+                        base_facets_expression + Word(']').suppress()
+    return facets_expression
 
-    single_nested_expression = Word(srange("[a-zA-Z0-9_.]")) + Optional(Word('(').suppress() + OneOrMore(facet_logical_expression).setParseAction(_parse_one_or_more_facets_expression) +
-                                                                       Word(')').suppress())
+
+def get_nested_expression():
+    facet_logical_expression = get_nested_logical_expression()
+    single_nested_expression = Word(
+        srange("[a-zA-Z0-9_.]")) +\
+        Optional(
+            Word('(').suppress() +
+            OneOrMore(facet_logical_expression).setParseAction(_parse_one_or_more_facets_expression) +
+            Word(')').suppress())
     single_nested_expression.setParseAction(_parse_single_nested_expression)
     base_nested_expression = OneOrMore(single_nested_expression + Optional(',').suppress())
     base_nested_expression.setParseAction(_parse_base_nested_expression)
     nested_expression = Word('nested:').suppress() + Word('[').suppress() + base_nested_expression + Word(']').suppress()
+    return nested_expression
+
+
+def _construct_grammar():
+    logical_operator = get_logical_operator()
+    logical_expression = get_logical_expression()
+
+    facets_expression = get_facet_expression()
+    nested_expression = get_nested_expression()
 
     # The below line describes how the type expression should be.
     type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
         CaselessLiteral('AND')).suppress()
     type_expression.setParseAction(_parse_type_expression)
 
-    # The below lines describes the final grammar
     base_expression = Optional(type_expression) +  \
         ZeroOrMore((facets_expression | nested_expression | logical_expression) + Optional(logical_operator)).setParseAction(
             _parse_one_or_more_logical_expressions)
-
     base_expression.setParseAction(_parse_type_logical_facets_expression)
 
     return base_expression
