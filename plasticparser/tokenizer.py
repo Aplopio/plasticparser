@@ -43,8 +43,9 @@ def get_logical_expression():
     logical_operator = get_logical_operator()
     compare_expression = get_key() + get_operator() + get_value()
     compare_expression.setParseAction(parse_compare_expression)
-    base_logical_expression = (compare_expression + logical_operator +
-                               compare_expression).setParseAction(
+    base_logical_expression = (compare_expression
+                               + logical_operator
+                               + compare_expression).setParseAction(
         parse_logical_expression) | compare_expression | Word(
         unicode_printables).setParseAction(parse_free_text)
     logical_expression = ('(' + base_logical_expression + ')').setParseAction(
@@ -58,13 +59,16 @@ def get_nested_logical_expression():
     value = get_value()
     key = get_key()
 
-    paren_value = '(' + OneOrMore(logical_operator | value).setParseAction(join_words) + ')'
+    paren_value = '(' + OneOrMore(
+        logical_operator | value).setParseAction(join_words) + ')'
     paren_value.setParseAction(join_brackets)
     facet_compare_expression = key + operator + paren_value | value
     facet_compare_expression.setParseAction(parse_facet_compare_expression)
-    facet_base_logical_expression = (facet_compare_expression + Optional(logical_operator)).setParseAction(
-        parse_logical_expression) | value
-    facet_logical_expression = ('(' + facet_base_logical_expression + ')').setParseAction(
+    facet_base_logical_expression = (facet_compare_expression
+                                     + Optional(logical_operator)).setParseAction(
+                                         parse_logical_expression) | value
+    facet_logical_expression = ('(' + facet_base_logical_expression
+                                + ')').setParseAction(
         parse_paren_base_logical_expression) | facet_base_logical_expression
     return facet_logical_expression
 
@@ -78,10 +82,12 @@ def get_facet_expression():
             OneOrMore(facet_logical_expression).setParseAction(parse_one_or_more_facets_expression) +
             Word(')').suppress())
     single_facet_expression.setParseAction(parse_single_facet_expression)
-    base_facets_expression = OneOrMore(single_facet_expression + Optional(',').suppress())
+    base_facets_expression = OneOrMore(single_facet_expression
+                                       + Optional(',').suppress())
     base_facets_expression.setParseAction(parse_base_facets_expression)
-    facets_expression = Word('facets:').suppress() + Word('[').suppress() +\
-                        base_facets_expression + Word(']').suppress()
+    facets_expression = Word('facets:').suppress() \
+        + Word('[').suppress() \
+        + base_facets_expression + Word(']').suppress()
     return facets_expression
 
 
@@ -94,9 +100,13 @@ def get_nested_expression():
             OneOrMore(facet_logical_expression).setParseAction(parse_one_or_more_facets_expression) +
             Word(')').suppress())
     single_nested_expression.setParseAction(parse_single_nested_expression)
-    base_nested_expression = OneOrMore(single_nested_expression + Optional(',').suppress())
+    base_nested_expression = OneOrMore(single_nested_expression
+                                       + Optional(',').suppress())
     base_nested_expression.setParseAction(parse_base_nested_expression)
-    nested_expression = Word('nested:').suppress() + Word('[').suppress() + base_nested_expression + Word(']').suppress()
+    nested_expression = Word('nested:').suppress()\
+        + Word('[').suppress()\
+        + base_nested_expression\
+        + Word(']').suppress()
     return nested_expression
 
 
@@ -108,12 +118,17 @@ def _construct_grammar():
     nested_expression = get_nested_expression()
 
     # The below line describes how the type expression should be.
-    type_expression = Word('type') + Word(':').suppress() + Word(alphanums) + Optional(
-        CaselessLiteral('AND')).suppress()
+    type_expression = Word('type')\
+        + Word(':').suppress()\
+        + Word(alphanums)\
+        + Optional(CaselessLiteral('AND')).suppress()
     type_expression.setParseAction(parse_type_expression)
 
-    base_expression = Optional(type_expression) +  \
-        ZeroOrMore((facets_expression | nested_expression | logical_expression) + Optional(logical_operator)).setParseAction(
+    base_expression = Optional(type_expression)\
+        + ZeroOrMore((facets_expression
+                      | nested_expression
+                      | logical_expression)
+                     + Optional(logical_operator)).setParseAction(
             parse_one_or_more_logical_expressions)
     base_expression.setParseAction(parse_type_logical_facets_expression)
 
