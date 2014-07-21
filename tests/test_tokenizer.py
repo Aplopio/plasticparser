@@ -218,3 +218,4 @@ class TokenizerTest(unittest.TestCase):
                                                                                                          'query': u'a:(bb) abc:(def fff)',
                                                                                                          'default_operator': 'and'}}}}]}}}},
                                          'facets': {}})
+

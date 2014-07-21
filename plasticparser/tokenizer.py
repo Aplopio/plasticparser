@@ -135,9 +135,15 @@ def _construct_grammar():
     return base_expression
 
 
+
+def _sanitize_query(query_string):
+    for char in [u'\n', u'\xa0', u'\t']:
+        query_string = query_string.replace(char, u' ')
+    return query_string.strip()
+
 grammar = _construct_grammar()
 
-
 def tokenize(query_string):
-    return grammar.parseString(query_string.replace('\n', '').strip(),
+    return grammar.parseString(_sanitize_query(query_string),
                                parseAll=True).asList()[0]
+
