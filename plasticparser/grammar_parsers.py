@@ -6,7 +6,6 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '^', '~', '*',
                   '?', '/')
 
-
 class Facets(object):
     def __init__(self, facets_dsl):
         self.facets_dsl = facets_dsl
@@ -154,6 +153,7 @@ def parse_type_logical_facets_expression(tokens):
 
 
 def parse_single_facet_expression(tokens):
+    from .plasticparser import FACETS_QUERY_SIZE
     facet_key = tokens[0]
     filters = {
         facet_key: {}
@@ -165,7 +165,7 @@ def parse_single_facet_expression(tokens):
         field = nested_keys[-1]
 
     field = "{}_nonngram".format(field)
-    filters[facet_key]["terms"] = {"field": field, "size": 20}
+    filters[facet_key]["terms"] = {"field": field, "size": FACETS_QUERY_SIZE}
     if len(tokens) > 1:
         filters[facet_key]["facet_filter"] = {
             "query": {

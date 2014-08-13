@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import tokenizer
 
-
-def get_query_dsl(query_string, global_filters=None):
+def get_query_dsl(query_string, global_filters=None, facets_query_size=20):
     """
     returns an elasticsearch query dsl for a query string
     param: query_string : an expression of the form
@@ -15,8 +14,10 @@ def get_query_dsl(query_string, global_filters=None):
      so that the query can be narrowed down to fewer documents.
      It is translated into an elastic search term filter.
     """
-    global_filters = global_filters if global_filters else {}
+    global FACETS_QUERY_SIZE
+    FACETS_QUERY_SIZE = facets_query_size
 
+    global_filters = global_filters if global_filters else {}
     expression = tokenizer.tokenize(query_string)
     bool_lists = expression['query']['filtered']['filter']['bool']
     [bool_lists['should'].append({"term": orele}) for orele in global_filters.get('or', [])]
