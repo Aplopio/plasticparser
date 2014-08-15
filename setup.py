@@ -7,7 +7,7 @@ long_description = """
  """
 
 setup(name='plasticparser',
-      version='0.2.6',
+      version='0.2.7',
       description='An Elastic Search Query Parser',
       long_description=long_description,
       url='https://github.com/Aplopio/plasticparser',

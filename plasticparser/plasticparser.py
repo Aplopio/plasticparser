@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from . import tokenizer
 
-def get_query_dsl(query_string, global_filters=None, facets_query_size=20):
+def get_query_dsl(
+        query_string, global_filters=None, facets_query_size=20, default_operator='and'):
     """
     returns an elasticsearch query dsl for a query string
     param: query_string : an expression of the form
@@ -14,8 +15,9 @@ def get_query_dsl(query_string, global_filters=None, facets_query_size=20):
      so that the query can be narrowed down to fewer documents.
      It is translated into an elastic search term filter.
     """
-    global FACETS_QUERY_SIZE
+    global FACETS_QUERY_SIZE, DEFAULT_OPERATOR
     FACETS_QUERY_SIZE = facets_query_size
+    DEFAULT_OPERATOR = default_operator
 
     global_filters = global_filters if global_filters else {}
     expression = tokenizer.tokenize(query_string)
