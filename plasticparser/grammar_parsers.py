@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import plasticparser
 
 RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
                   '{', '}', '[', ']',
                   '^', '~', '*',
                   '?', '/')
-
 
 class Facets(object):
     def __init__(self, facets_dsl):
@@ -147,7 +147,8 @@ def parse_type_logical_facets_expression(tokens):
         query_dsl["query"]["filtered"]["query"] = {
             "query_string": {
                 "query": query,
-                "default_operator": "and"
+                "default_operator": getattr(
+                    plasticparser, 'DEFAULT_OPERATOR', 'and')
             }
         }
     return query_dsl
@@ -165,7 +166,8 @@ def parse_single_facet_expression(tokens):
         field = nested_keys[-1]
 
     field = "{}_nonngram".format(field)
-    filters[facet_key]["terms"] = {"field": field, "size": 20}
+    filters[facet_key]["terms"] = {"field": field, "size": getattr(
+        plasticparser, 'FACETS_QUERY_SIZE', 20)}
     if len(tokens) > 1:
         filters[facet_key]["facet_filter"] = {
             "query": {
