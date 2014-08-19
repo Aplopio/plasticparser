@@ -38,3 +38,7 @@ def get_document_types(query_string):
     expression = tokenizer.tokenize(query_string)
     must_filters = expression['query']['filtered']['filter']['bool']['must']
     return [filter['type']['value'] for filter in must_filters if filter.keys()[0]=='type']
+
+def is_facet_query(query_string):
+    expression = tokenizer.tokenize(query_string)
+    return True if expression['facets'] else False
