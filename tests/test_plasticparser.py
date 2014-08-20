@@ -295,6 +295,17 @@ class GetDocTypesTest(unittest.TestCase):
         doc_types = plasticparser.get_document_types(query_string)
         self.assertEqual(doc_types, ['help'])
 
+class IsFacetQueryTest(unittest.TestCase):
+    def test_should_return_false_bcoz_is_not_facet_query(self):
+        query_string = 'type:help and title:hello description:"world"'
+        is_facet_query = plasticparser.is_facet_query(query_string)
+        self.assertEqual(is_facet_query, False)
+
+    def test_should_return_true_bcoz_is_facet_query(self):
+        query_string = 'type:help and title:hello description:"world" facets[abc]'
+        is_facet_query = plasticparser.is_facet_query(query_string)
+        self.assertEqual(is_facet_query, True)
+
 
 if __name__ == '__main__':
     unittest.main()
