@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from peak.util.proxies import LazyProxy
 from pyparsing import (
     Word, QuotedString, oneOf, CaselessLiteral, White,
     OneOrMore, Optional, alphanums, srange, ZeroOrMore)
@@ -79,7 +80,8 @@ def get_facet_expression():
         srange("[a-zA-Z0-9_.]")) +\
         Optional(
             Word('(').suppress() +
-            OneOrMore(facet_logical_expression).setParseAction(parse_one_or_more_facets_expression) +
+            OneOrMore(facet_logical_expression).setParseAction(
+                parse_one_or_more_facets_expression) +
             Word(')').suppress())
     single_facet_expression.setParseAction(parse_single_facet_expression)
     base_facets_expression = OneOrMore(single_facet_expression
@@ -97,7 +99,8 @@ def get_nested_expression():
         srange("[a-zA-Z0-9_.]")) +\
         Optional(
             Word('(').suppress() +
-            OneOrMore(facet_logical_expression).setParseAction(parse_one_or_more_facets_expression) +
+            OneOrMore(facet_logical_expression).setParseAction(
+                parse_one_or_more_facets_expression) +
             Word(')').suppress())
     single_nested_expression.setParseAction(parse_single_nested_expression)
     base_nested_expression = OneOrMore(single_nested_expression
@@ -135,15 +138,14 @@ def _construct_grammar():
     return base_expression
 
 
-
 def _sanitize_query(query_string):
     for char in [u'\n', u'\xa0', u'\t']:
         query_string = query_string.replace(char, u' ')
     return query_string.strip()
 
-grammar = _construct_grammar()
+grammar = LazyProxy(_construct_grammar)
+
 
 def tokenize(query_string):
     return grammar.parseString(_sanitize_query(query_string),
                                parseAll=True).asList()[0]
-

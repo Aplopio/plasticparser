@@ -7,7 +7,7 @@ long_description = """
  """
 
 setup(name='plasticparser',
-      version='0.2.8',
+      version='0.2.9',
       description='An Elastic Search Query Parser',
       long_description=long_description,
       url='https://github.com/Aplopio/plasticparser',
@@ -22,5 +22,6 @@ setup(name='plasticparser',
       ],
       keywords=["elasticsearch ", "query language", "query parser"],
       packages=['plasticparser'],
-      install_requires=['pyparsing==2.0.2'],
+      install_requires=['pyparsing==2.0.2',
+                        'ProxyTypes==0.9'],
 )
