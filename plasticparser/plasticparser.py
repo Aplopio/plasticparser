@@ -25,7 +25,8 @@ def get_query_dsl(
     [bool_lists['should'].append({"term": orele}) for orele in global_filters.get('or', [])]
     [bool_lists['must'].append({"term": andele}) for andele in global_filters.get('and', [])]
     [bool_lists['must_not'].append({"term": notele}) for notele in global_filters.get('not', [])]
-    expression['sort'] = global_filters.get('sort', [])
+    if global_filters.has_key('sort'):
+        expression['sort'] = global_filters.get('sort')
     return expression
 
 def get_document_types(query_string):

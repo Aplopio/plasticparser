@@ -27,7 +27,6 @@ class PlasticParserTestCase(unittest.TestCase):
                 }
             },
             "facets": {},
-            "sort": []
         }
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
@@ -58,7 +57,6 @@ class PlasticParserTestCase(unittest.TestCase):
                 }
             },
             "facets": {},
-            "sort": []
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
@@ -89,7 +87,6 @@ class PlasticParserTestCase(unittest.TestCase):
                 }
             },
             "facets": {},
-            "sort": []
         }
 
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
@@ -144,7 +141,6 @@ class PlasticParserTestCase(unittest.TestCase):
                     }
                 }
             },
-            'sort': []
         }
 
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
@@ -282,7 +278,6 @@ class PlasticParserTestCase(unittest.TestCase):
                 }
             },
             "facets": {},
-            "sort": []
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
