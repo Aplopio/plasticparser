@@ -140,9 +140,10 @@ def parse_type_logical_facets_expression(tokens):
                     }
                 }
             }
-        },
-        "facets": facets
+        }
     }
+    if facets:
+        query_dsl['facets'] = facets
     if query:
         query_dsl["query"]["filtered"]["query"] = {
             "query_string": {

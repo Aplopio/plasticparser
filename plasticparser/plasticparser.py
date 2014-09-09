@@ -42,4 +42,4 @@ def get_document_types(query_string):
 
 def is_facet_query(query_string):
     expression = tokenizer.tokenize(query_string)
-    return True if expression['facets'] else False
+    return True if expression.get('facets') else False

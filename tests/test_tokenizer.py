@@ -109,7 +109,7 @@ class TokenizerTest(unittest.TestCase):
                         'query_string': {
                             'query': u'(abc:>def mms:>asd)',
                             "default_operator": "and"}}}},
-            'facets': {}}
+        }
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_logical_expression_with_type_multi_facets(self):
@@ -157,7 +157,7 @@ class TokenizerTest(unittest.TestCase):
                         'query_string': {
                             'query': u'title:hello OR description:"world"',
                             "default_operator": "and"}}}},
-            'facets': {}}
+        }
         self.assertEqual(parsed_string, expected_query_string)
 
     def test_should_parse_basic_logical_expression_facets_with_no_facet_filters(
@@ -217,5 +217,5 @@ class TokenizerTest(unittest.TestCase):
                                                                                                          'query_string': {
                                                                                                          'query': u'a:(bb) abc:(def fff)',
                                                                                                          'default_operator': 'and'}}}}]}}}},
-                                         'facets': {}})
+                                         })
 
