@@ -123,7 +123,7 @@ def _construct_grammar():
     # The below line describes how the type expression should be.
     type_expression = Word('type')\
         + Word(':').suppress()\
-        + Word(alphanums)\
+        + Word(srange("[a-zA-Z0-9_]"))\
         + Optional(CaselessLiteral('AND')).suppress()
     type_expression.setParseAction(parse_type_expression)
 

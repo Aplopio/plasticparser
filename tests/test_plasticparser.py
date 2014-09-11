@@ -284,6 +284,11 @@ class GetDocTypesTest(unittest.TestCase):
         doc_types = plasticparser.get_document_types(query_string)
         self.assertEqual(doc_types, ['help'])
 
+    def test_should_return_doc_type_if_starts_with_underscore(self):
+        query_string = 'type:help_and_more and title:hello description:"world"'
+        doc_types = plasticparser.get_document_types(query_string)
+        self.assertEqual(doc_types, ['help_and_more'])
+
 class IsFacetQueryTest(unittest.TestCase):
     def test_should_return_false_bcoz_is_not_facet_query(self):
         query_string = 'type:help and title:hello description:"world"'
