@@ -219,3 +219,8 @@ class TokenizerTest(unittest.TestCase):
                                                                                                          'default_operator': 'and'}}}}]}}}},
                                          })
 
+    def test_should_escape_value_with_colon(self):
+        query_string = "tags:dev:ops"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string['query']['filtered']['query']['query_string']['query'],
+                         u'tags:dev\:ops')

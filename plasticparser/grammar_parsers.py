@@ -5,7 +5,7 @@ RESERVED_CHARS = ('\\', '+', '-', '&&',
                   '||', '!', '(', ')',
                   '{', '}', '[', ']',
                   '^', '~', '*',
-                  '?', '/')
+                  '?', '/', ':')
 
 class Facets(object):
     def __init__(self, facets_dsl):
@@ -61,7 +61,7 @@ def sanitize_free_text(value):
     if not isinstance(value, basestring):
         return value
     for char in RESERVED_CHARS:
-        if char not in ['(', ')']:
+        if char not in ['(', ')', ':']:
             value = value.replace(char, u'\{}'.format(char))
     return value
 
