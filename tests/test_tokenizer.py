@@ -91,6 +91,41 @@ class TokenizerTest(unittest.TestCase):
 
         self.assertEqual(parsed_string, expected_query_string)
 
+    def test_should_not_misinterpret_words_starting_with_logical_ops(self):
+        query_string = "type:candidates AND nested:[metadata_facets(field_name:(location) AND field_value:(orlando))] "
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': [
+                                {
+                                    'type': {
+                                        'value': u'candidates'
+                                    }
+                                },
+                                {
+                                    'nested': {
+                                        'path': u'metadata_facets',
+                                        'query': {
+                                            'query_string': {
+                                                'query': u'field_name:(location) AND field_value:(orlando)',
+                                                'default_operator': 'and'
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(parsed_string, expected_query_string)
+
     def test_should_parse_logical_expression_with_type(self):
         query_string = "type:def (abc:>def mms:>asd)"
         parsed_string = tokenizer.tokenize(query_string)

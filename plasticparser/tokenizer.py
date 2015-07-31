@@ -3,7 +3,7 @@
 from peak.util.proxies import LazyProxy
 from pyparsing import (
     Word, QuotedString, oneOf, CaselessLiteral, White,
-    OneOrMore, Optional, alphanums, srange, ZeroOrMore)
+    OneOrMore, Optional, alphanums, srange, ZeroOrMore, CaselessKeyword)
 from .grammar_parsers import (
     parse_logical_expression, parse_compare_expression, parse_free_text,
     parse_paren_base_logical_expression, join_brackets, join_words,
@@ -37,7 +37,7 @@ def get_operator():
 
 
 def get_logical_operator():
-    return CaselessLiteral('AND') | CaselessLiteral('OR') | White().suppress()
+    return CaselessKeyword('AND') | CaselessKeyword('OR') | White().suppress()
 
 
 def get_logical_expression():
