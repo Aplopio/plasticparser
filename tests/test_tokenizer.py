@@ -168,7 +168,7 @@ class TokenizerTest(unittest.TestCase):
                         'query': {
                             'query_string': {
                                 'query': u'abc:def', "default_operator": "and"}}}, 'terms': {
-                    'field': 'bb_nonngram', 'size': 20}, 'nested': u'aaa'},
+                    'field': 'aaa.bb_nonngram', 'size': 20}, 'nested': u'aaa'},
                 'bbb': {
                     'facet_filter': {
                         'query': {
@@ -203,7 +203,7 @@ class TokenizerTest(unittest.TestCase):
             parsed_string, {'query': {
                 'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
                              'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
-                            'facets': {'aaa.bb': {'terms': {'field': 'bb_nonngram', 'size': 20}}}})
+                            'facets': {'aaa.bb': {'terms': {'field': 'aaa.bb_nonngram', 'size': 20}}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(
             self):

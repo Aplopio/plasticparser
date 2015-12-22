@@ -164,7 +164,6 @@ def parse_single_facet_expression(tokens):
     if "." in facet_key:
         nested_keys = facet_key.split(".")
         nested_field = u".".join(nested_keys[:-1])
-        field = nested_keys[-1]
 
     field = "{}_nonngram".format(field)
     filters[facet_key]["terms"] = {"field": field, "size": getattr(
