@@ -1,2 +1,3 @@
 pyparsing==2.0.2
+ProxyTypes==0.9
 
