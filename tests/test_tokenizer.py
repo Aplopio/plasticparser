@@ -91,6 +91,58 @@ class TokenizerTest(unittest.TestCase):
 
         self.assertEqual(parsed_string, expected_query_string)
 
+    def test_should_parse_logical_expression_with_type_and_aggs(self):
+        self.maxDiff = None
+        query_string = "type:def aggregations: [ aaa(abc:def) ] (abc:>def mms:>asd)"
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [], 'must_not': [], 'must': [
+                                {
+                                    'type': {
+                                        'value': 'def'
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'(abc:>def mms:>asd)',
+                            "default_operator": "and"
+                        }
+                    }
+                }
+            },
+            'aggregations': {
+                'aaa': {
+                    'aggregations': {
+                        'aaa': {
+                            'terms': {
+                                'field': 'aaa_nonngram', 'size': 20
+                            },
+                            'aggregations': {
+                                'aaa': {
+                                    'filter': {
+                                        'query': {
+                                            'query_string': {
+                                                'query': u'abc:def',
+                                                "default_operator": "and"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },                        
+                    }
+                }
+            }
+        }
+        self.assertEqual(parsed_string, expected_query_string)
+
     def test_should_not_misinterpret_words_starting_with_logical_ops(self):
         query_string = "type:candidates AND nested:[metadata_facets(field_name:(location) AND field_value:(orlando))] "
         parsed_string = tokenizer.tokenize(query_string)
