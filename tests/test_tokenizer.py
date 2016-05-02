@@ -229,6 +229,85 @@ class TokenizerTest(unittest.TestCase):
                     'field': 'bbb_nonngram', 'size': 20}}}}
         self.assertEqual(parsed_string, expected_query_string)
 
+    def test_should_parse_logical_expression_with_type_multi_aggs(self):
+        query_string = "type:def (abc:>def mms:>asd)    aggregations: [ aaa.bb(abc:def) bbb(cc:ddd) ] "
+        parsed_string = tokenizer.tokenize(query_string)
+        expected_query_string = {
+            "query": {
+                "filtered": {
+                    "filter": {
+                        "bool": {
+                            "should": [],
+                            "must_not": [],
+                            "must": [
+                                {
+                                    "type": {
+                                        "value": "def"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "query": {
+                        "query_string": {
+                            "query": "(abc:>def mms:>asd)",
+                            "default_operator": "and"
+                        }
+                    }
+                }
+            },
+            "aggregations": {
+                "aaa.bb": {
+                    "aggregations": {
+                        "aaa.bb": {
+                            "terms": {
+                                "field": "aaa.bb_nonngram",
+                                "size": 20
+                            },
+                            "aggregations": {
+                                "aaa.bb": {
+                                    "filter": {
+                                        "query": {
+                                            "query_string": {
+                                                "query": "abc:def",
+                                                "default_operator": "and"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "nested": {
+                        "path": "aaa"
+                    }
+                },
+                "bbb": {
+                    "aggregations": {
+                        "bbb": {
+                            "terms": {
+                                "field": "bbb_nonngram",
+                                "size": 20
+                            },
+                            "aggregations": {
+                                "bbb": {
+                                    "filter": {
+                                        "query": {
+                                            "query_string": {
+                                                "query": "cc:ddd",
+                                                "default_operator": "and"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        self.assertEqual(parsed_string, expected_query_string)
+
     def test_should_parse_basic_logical_expression(self):
         query_string = 'title:hello OR description:"world"'
         parsed_string = tokenizer.tokenize(query_string)
@@ -256,6 +335,17 @@ class TokenizerTest(unittest.TestCase):
                 'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
                              'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
                             'facets': {'aaa.bb': {'terms': {'field': 'aaa.bb_nonngram', 'size': 20}}}})
+
+    def test_should_parse_basic_logical_expression_aggs_with_no_facet_filters(
+            self):
+        query_string = "type:def (abc:>def mms:>asd) aggregations: [ aaa.bb ]"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(
+            parsed_string, {
+                'query': {
+                    'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
+                             'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
+                            'aggregations': {'aaa.bb': {'aggregations': {'aaa.bb': {'terms': {'field': 'aaa.bb_nonngram', 'size': 20}}}}}})
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(
             self):
