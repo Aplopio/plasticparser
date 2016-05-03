@@ -160,6 +160,9 @@ def parse_type_logical_facets_expression(tokens):
         query_dsl['facets'] = facets
     if aggs:
         query_dsl['aggregations'] = aggs
+        # `size` is added in version 2.0
+        # `size` is used to return only counts without hits
+        query_dsl['size'] = 0
     if query:
         query_dsl["query"]["filtered"]["query"] = {
             "query_string": {
