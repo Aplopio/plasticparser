@@ -117,6 +117,7 @@ class TokenizerTest(unittest.TestCase):
                     }
                 }
             },
+            "size": 0,
             'aggregations': {
                 'aaa': {
                     'aggregations': {
@@ -256,6 +257,7 @@ class TokenizerTest(unittest.TestCase):
                     }
                 }
             },
+            "size": 0,
             "aggregations": {
                 "aaa.bb": {
                     "aggregations": {
@@ -336,16 +338,49 @@ class TokenizerTest(unittest.TestCase):
                              'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
                             'facets': {'aaa.bb': {'terms': {'field': 'aaa.bb_nonngram', 'size': 20}}}})
 
-    def test_should_parse_basic_logical_expression_aggs_with_no_facet_filters(
+    def test_should_parse_basic_logical_expression_aggs_with_no_filters(
             self):
         query_string = "type:def (abc:>def mms:>asd) aggregations: [ aaa.bb ]"
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(
             parsed_string, {
                 'query': {
-                    'filtered': {'filter': {'bool': {'should': [], 'must_not': [], 'must': [{'type': {'value': 'def'}}]}},
-                             'query': {'query_string': {'query': u'(abc:>def mms:>asd)', 'default_operator': 'and'}}}},
-                            'aggregations': {'aaa.bb': {'aggregations': {'aaa.bb': {'terms': {'field': 'aaa.bb_nonngram', 'size': 20}}}}}})
+                    'filtered': {
+                        'filter': {
+                            'bool': {
+                                'should': [],
+                                'must_not': [],
+                                'must': [
+                                    {
+                                        'type': {
+                                            'value': 'def'
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        'query': {
+                            'query_string': {
+                                'query': u'(abc:>def mms:>asd)',
+                                'default_operator': 'and'
+                            }
+                        }
+                    }
+                },
+                "size": 0,
+                'aggregations': {
+                    'aaa.bb': {
+                        'aggregations': {
+                            'aaa.bb': {
+                                'terms': {
+                                    'field': 'aaa.bb_nonngram', 'size': 20
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
 
     def test_should_parse_basic_logical_expression_facets_with_simple_field(
             self):
