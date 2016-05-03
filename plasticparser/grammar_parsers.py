@@ -197,6 +197,30 @@ def parse_single_facet_expression(tokens):
 
 
 def parse_single_aggs_expression(tokens):
+    """
+    Parses single aggregation query. Following is example input and output:
+
+    INPUT
+    type:candidates (name:"John Doe" starred:true) (python or java) facets:[location]
+
+    OUTPUT
+    {
+        ...
+        "aggregations": {
+            "location": {
+                "aggregations": {
+                    "location": {
+                        "terms": {
+                            "field": "location_nonngram",
+                            "size": 20
+                        }
+                    }
+                }
+            }
+        }
+        ...
+    }
+    """
     aggs_key = tokens[0]
     filters = {
         aggs_key: {
