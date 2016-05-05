@@ -1,6 +1,8 @@
 plasticparser
 =============
 
+[![Circle CI](https://circleci.com/gh/Aplopio/plasticparser/tree/master.svg?style=svg)](https://circleci.com/gh/Aplopio/plasticparser/tree/master)
+
 An Elastic Search Query Parser
 
 
