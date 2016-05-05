@@ -15,6 +15,14 @@ class Facets(object):
         return self.facets_dsl
 
 
+class Aggregations(object):
+    def __init__(self, aggregations_dsl):
+        self.aggregations_dsl = aggregations_dsl
+
+    def get_query(self):
+        return self.aggregations_dsl
+
+
 class Nested(object):
     def __init__(self, nested_dsl):
         self.nested_dsl = nested_dsl
@@ -96,6 +104,9 @@ def default_parse_func(tokens):
         if isinstance(token, Facets):
             return_list.append(token)
             token_list.remove(token)
+        if isinstance(token, Aggregations):
+            return_list.append(token)
+            token_list.remove(token)
         if isinstance(token, type):
             return_list.append(token)
             token_list.remove(token)
@@ -118,6 +129,7 @@ def parse_type_logical_facets_expression(tokens):
     should_list = []
     must_not_list = []
     facets = {}
+    aggs = {}
     for token in tokens.asList():
         if isinstance(token, Nested):
             nested = token.get_query()
@@ -126,6 +138,8 @@ def parse_type_logical_facets_expression(tokens):
             query = token.get_query()
         if isinstance(token, Facets):
             facets = token.get_query()
+        if isinstance(token, Aggregations):
+            aggs = token.get_query()
         if isinstance(token, Type):
             type = token.get_query()
             must_list.append(type)
@@ -144,6 +158,11 @@ def parse_type_logical_facets_expression(tokens):
     }
     if facets:
         query_dsl['facets'] = facets
+    if aggs:
+        query_dsl['aggregations'] = aggs
+        # `size` is added in version 2.0
+        # `size` is used to return only counts without hits
+        query_dsl['size'] = 0
     if query:
         query_dsl["query"]["filtered"]["query"] = {
             "query_string": {
@@ -180,11 +199,78 @@ def parse_single_facet_expression(tokens):
     return filters
 
 
+def parse_single_aggs_expression(tokens):
+    """
+    Parses single aggregation query. Following is example input and output:
+
+    INPUT
+    type:candidates (name:"John Doe" starred:true) (python or java) facets:[location]
+
+    OUTPUT
+    {
+        ...
+        "aggregations": {
+            "location": {
+                "aggregations": {
+                    "location": {
+                        "terms": {
+                            "field": "location_nonngram",
+                            "size": 20
+                        }
+                    }
+                }
+            }
+        }
+        ...
+    }
+    """
+    aggs_key = tokens[0]
+    filters = {
+        aggs_key: {
+            "aggregations": {
+                aggs_key: {}
+            }
+        }
+    }
+    field = aggs_key
+    if "." in aggs_key:
+        nested_keys = aggs_key.split(".")
+        nested_field = u".".join(nested_keys[:-1])
+
+    field = "{}_nonngram".format(field)
+    filters[aggs_key]["aggregations"][aggs_key]["terms"] = {
+        "field": field, "size": getattr(
+            plasticparser, 'FACETS_QUERY_SIZE', 20)
+    }
+
+    if len(tokens) > 1:
+        filters[aggs_key]["aggregations"][aggs_key]["aggregations"] = {
+            aggs_key: {'filter': {
+                "query": {
+                    "query_string": {
+                        "query": tokens[1], "default_operator": "and"
+                    }
+                }
+            }}
+        }
+
+    if len(tokens) > 1 and "." in aggs_key:
+        filters[aggs_key]['nested'] = {'path': nested_field}
+    return filters
+
+
 def parse_base_facets_expression(tokens):
     facets = {}
     for tok in tokens.asList():
         facets.update(tok)
     return Facets(facets)
+
+
+def parse_base_aggs_expression(tokens):
+    aggs = {}
+    for tok in tokens.asList():
+        aggs.update(tok)
+    return Aggregations(aggs)
 
 
 def join_words(tokens):
@@ -196,6 +282,10 @@ def join_brackets(tokens):
 
 
 def parse_one_or_more_facets_expression(tokens):
+    return u' '.join(tokens)
+
+
+def parse_one_or_more_aggs_expression(tokens):
     return u' '.join(tokens)
 
 

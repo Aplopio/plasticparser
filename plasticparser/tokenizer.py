@@ -11,7 +11,8 @@ from .grammar_parsers import (
     parse_single_nested_expression, parse_base_nested_expression,
     parse_single_facet_expression, parse_base_facets_expression,
     parse_type_expression, parse_one_or_more_logical_expressions,
-    parse_type_logical_facets_expression)
+    parse_type_logical_facets_expression, parse_one_or_more_aggs_expression,
+    parse_single_aggs_expression, parse_base_aggs_expression)
 
 unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                               if not unichr(c).isspace())
@@ -93,6 +94,25 @@ def get_facet_expression():
     return facets_expression
 
 
+def get_aggregations_expression():
+    aggs_logical_expression = get_nested_logical_expression()
+    single_aggs_expression = Word(
+        srange("[a-zA-Z0-9_.]")) +\
+        Optional(
+            Word('(').suppress() +
+            OneOrMore(aggs_logical_expression).setParseAction(
+                parse_one_or_more_aggs_expression) +
+            Word(')').suppress())
+    single_aggs_expression.setParseAction(parse_single_aggs_expression)
+    base_aggs_expression = OneOrMore(single_aggs_expression
+                                       + Optional(',').suppress())
+    base_aggs_expression.setParseAction(parse_base_aggs_expression)
+    aggs_expression = Word('aggregations:').suppress() \
+        + Word('[').suppress() \
+        + base_aggs_expression + Word(']').suppress()
+    return aggs_expression
+
+
 def get_nested_expression():
     facet_logical_expression = get_nested_logical_expression()
     single_nested_expression = Word(
@@ -118,6 +138,7 @@ def _construct_grammar():
     logical_expression = get_logical_expression()
 
     facets_expression = get_facet_expression()
+    aggs_expression = get_aggregations_expression()
     nested_expression = get_nested_expression()
 
     # The below line describes how the type expression should be.
@@ -129,6 +150,7 @@ def _construct_grammar():
 
     base_expression = Optional(type_expression)\
         + ZeroOrMore((facets_expression
+                      | aggs_expression
                       | nested_expression
                       | logical_expression)
                      + Optional(logical_operator)).setParseAction(
