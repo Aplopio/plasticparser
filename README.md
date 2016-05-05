@@ -5,6 +5,14 @@ plasticparser
 
 An Elastic Search Query Parser
 
+### Installation
+
+```
+$ pip install plasticparser
+```
+
+### Usage
+
 
 ```python
 from plasticparser import plasticparser
@@ -37,12 +45,7 @@ print plasticparser.get_query_dsl(query_string, global_filters)
                             'term': {'user_id': 2}
                         }
                     ],
-                    'must_not': [],
-                    'should': [
-                        {
-                            'term': {'assigned_to': ['/api/v1/users/5/']}
-                        }
-                    ]
+                    'must_not': []
                 }
             },
             'query': {
