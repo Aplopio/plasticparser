@@ -16,11 +16,11 @@ class Facets(object):
 
 
 class Aggregations(object):
-    def __init__(self, facets_dsl):
-        self.facets_dsl = facets_dsl
+    def __init__(self, aggregations_dsl):
+        self.aggregations_dsl = aggregations_dsl
 
     def get_query(self):
-        return self.facets_dsl
+        return self.aggregations_dsl
 
 
 class Nested(object):
