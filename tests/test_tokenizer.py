@@ -436,3 +436,31 @@ class TokenizerTest(unittest.TestCase):
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string['query']['filtered']['query']['query_string']['query'],
                          u'tags:dev\:ops')
+
+    def test_should_add_highlight_fields(self):
+        query_string = "highlight:[aaa] asdasd"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': []
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'asdasd',
+                            'default_operator': 'and'
+                        }
+                    }
+                }
+            },
+            'highlight': {
+                'fields': {
+                    u'aaa': {}
+                }
+            }
+        })
