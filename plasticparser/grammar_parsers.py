@@ -15,6 +15,14 @@ class Facets(object):
         return self.facets_dsl
 
 
+class Highlight(object):
+    def __init__(self, fields):
+        self.highlight_dsl = {"fields": fields}
+
+    def get_query(self):
+        return self.highlight_dsl
+
+
 class Aggregations(object):
     def __init__(self, aggregations_dsl):
         self.aggregations_dsl = aggregations_dsl
@@ -104,6 +112,9 @@ def default_parse_func(tokens):
         if isinstance(token, Facets):
             return_list.append(token)
             token_list.remove(token)
+        if isinstance(token, Highlight):
+            return_list.append(token)
+            token_list.remove(token)
         if isinstance(token, Aggregations):
             return_list.append(token)
             token_list.remove(token)
@@ -130,6 +141,7 @@ def parse_type_logical_facets_expression(tokens):
     must_not_list = []
     facets = {}
     aggs = {}
+    highlights = None
     for token in tokens.asList():
         if isinstance(token, Nested):
             nested = token.get_query()
@@ -138,6 +150,8 @@ def parse_type_logical_facets_expression(tokens):
             query = token.get_query()
         if isinstance(token, Facets):
             facets = token.get_query()
+        if isinstance(token, Highlight):
+            highlights = token.get_query()
         if isinstance(token, Aggregations):
             aggs = token.get_query()
         if isinstance(token, Type):
@@ -156,8 +170,13 @@ def parse_type_logical_facets_expression(tokens):
             }
         }
     }
+
+    if highlights is not None:
+        query_dsl['highlight'] = highlights
+
     if facets:
         query_dsl['facets'] = facets
+
     if aggs:
         query_dsl['aggregations'] = aggs
         # `size` is added in version 2.0
@@ -197,6 +216,19 @@ def parse_single_facet_expression(tokens):
     if len(tokens) > 1 and "." in facet_key:
         filters[facet_key]['nested'] = nested_field
     return filters
+
+
+def parse_highlight_field_expression(tokens):
+    """Parse single single highlight field from query.
+    eg:
+    query: highlight[field1, field2]
+
+    parsed output:
+    {"field1": {}}
+
+    TODO: add support for highlighting options provided by ElasticSearch
+    """
+    return {tokens[0]: {}}
 
 
 def parse_single_aggs_expression(tokens):
@@ -264,6 +296,11 @@ def parse_base_facets_expression(tokens):
     for tok in tokens.asList():
         facets.update(tok)
     return Facets(facets)
+
+
+def parse_highlight_expression(tokens):
+    """Generates query DSL from parsed single highlight fields from query."""
+    return Highlight({k: v for t in tokens.asList() for k, v in t.items()})
 
 
 def parse_base_aggs_expression(tokens):

@@ -12,7 +12,8 @@ from .grammar_parsers import (
     parse_single_facet_expression, parse_base_facets_expression,
     parse_type_expression, parse_one_or_more_logical_expressions,
     parse_type_logical_facets_expression, parse_one_or_more_aggs_expression,
-    parse_single_aggs_expression, parse_base_aggs_expression)
+    parse_single_aggs_expression, parse_base_aggs_expression,
+    parse_highlight_expression, parse_highlight_field_expression)
 
 unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                               if not unichr(c).isspace())
@@ -39,6 +40,18 @@ def get_operator():
 
 def get_logical_operator():
     return CaselessKeyword('AND') | CaselessKeyword('OR') | White().suppress()
+
+
+def get_highlight_expression():
+    field_expression = Word(srange("[a-zA-Z0-9_.*]"))
+    field_expression.setParseAction(parse_highlight_field_expression)
+    fields_expression = OneOrMore(
+        field_expression + Optional(',').suppress())
+    fields_expression.setParseAction(parse_highlight_expression)
+    highlight_expression = Word('highlight:').suppress() \
+        + Word('[').suppress() \
+        + fields_expression + Word(']').suppress()
+    return highlight_expression
 
 
 def get_logical_expression():
@@ -138,6 +151,7 @@ def _construct_grammar():
     logical_expression = get_logical_expression()
 
     facets_expression = get_facet_expression()
+    highlight_expression = get_highlight_expression()
     aggs_expression = get_aggregations_expression()
     nested_expression = get_nested_expression()
 
@@ -148,13 +162,15 @@ def _construct_grammar():
         + Optional(CaselessLiteral('AND')).suppress()
     type_expression.setParseAction(parse_type_expression)
 
-    base_expression = Optional(type_expression)\
-        + ZeroOrMore((facets_expression
-                      | aggs_expression
-                      | nested_expression
-                      | logical_expression)
-                     + Optional(logical_operator)).setParseAction(
-            parse_one_or_more_logical_expressions)
+    base_expression = Optional(highlight_expression)\
+        + Optional(type_expression)\
+        + ZeroOrMore(
+            (facets_expression
+             | aggs_expression
+             | nested_expression
+             | logical_expression)
+            + Optional(logical_operator)
+        ).setParseAction(parse_one_or_more_logical_expressions)
     base_expression.setParseAction(parse_type_logical_facets_expression)
 
     return base_expression
