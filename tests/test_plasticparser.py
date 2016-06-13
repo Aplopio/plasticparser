@@ -59,8 +59,8 @@ class PlasticParserTestCase(unittest.TestCase):
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
         self.assertEqual(elastic_query_dsl, expected_query_dsl)
 
-    def test_should_return_elastic_search_query_dsl_for_queries_with_highlight_fields(self):
-        query_string = 'highlight:[field,due_date] type:help and field:"asdsad" (due_date:>=1234)'
+    def test_should_return_elastic_search_query_dsl_for_queries_with_highlight_sort_fields(self):
+        query_string = 'highlight:[field,due_date] sort[due_date] type:help and field:"asdsad" (due_date:>=1234)'
         expected_query_dsl = {
             'query': {
                 'filtered': {
@@ -90,6 +90,9 @@ class PlasticParserTestCase(unittest.TestCase):
                     'field': {},
                     'due_date': {}
                 }
+            },
+            'sort': {
+                'due_date': {'order': 'asc'}
             }
         }
         elastic_query_dsl = plasticparser.get_query_dsl(query_string)
