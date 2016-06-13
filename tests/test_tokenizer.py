@@ -464,3 +464,55 @@ class TokenizerTest(unittest.TestCase):
                 }
             }
         })
+
+    def test_should_add_sort_fields(self):
+        query_string = "sort:[aaa] asdasd"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': []
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'asdasd',
+                            'default_operator': 'and'
+                        }
+                    }
+                }
+            },
+            'sort': {
+                'aaa': {"order": "asc"}
+            }
+        })
+
+    def test_should_add_sort_fields_descending(self):
+        query_string = "sort:[-aaa] asdasd"
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': []
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'asdasd',
+                            'default_operator': 'and'
+                        }
+                    }
+                }
+            },
+            'sort': {
+                'aaa': {"order": "desc"}
+            }
+        })

@@ -23,6 +23,14 @@ class Highlight(object):
         return self.highlight_dsl
 
 
+class Sort(object):
+    def __init__(self, fields):
+        self.sort_dsl = fields
+
+    def get_query(self):
+        return self.sort_dsl
+
+
 class Aggregations(object):
     def __init__(self, aggregations_dsl):
         self.aggregations_dsl = aggregations_dsl
@@ -142,6 +150,7 @@ def parse_type_logical_facets_expression(tokens):
     facets = {}
     aggs = {}
     highlights = None
+    sort = None
     for token in tokens.asList():
         if isinstance(token, Nested):
             nested = token.get_query()
@@ -152,6 +161,8 @@ def parse_type_logical_facets_expression(tokens):
             facets = token.get_query()
         if isinstance(token, Highlight):
             highlights = token.get_query()
+        if isinstance(token, Sort):
+            sort = token.get_query()
         if isinstance(token, Aggregations):
             aggs = token.get_query()
         if isinstance(token, Type):
@@ -173,6 +184,9 @@ def parse_type_logical_facets_expression(tokens):
 
     if highlights is not None:
         query_dsl['highlight'] = highlights
+
+    if sort is not None:
+        query_dsl['sort'] = sort
 
     if facets:
         query_dsl['facets'] = facets
@@ -229,6 +243,21 @@ def parse_highlight_field_expression(tokens):
     TODO: add support for highlighting options provided by ElasticSearch
     """
     return {tokens[0]: {}}
+
+
+def parse_sort_field_expression(tokens):
+    """Parse single sort field from query.
+    eg:
+    query: sort[field1, field2]
+
+    parsed output:
+    {"field1": {}} and {"field2": {}}
+    """
+
+    if len(tokens) > 1:
+        return {tokens[1]: {"order": "desc"}}
+    else:
+        return {tokens[0]: {"order": "asc"}}
 
 
 def parse_single_aggs_expression(tokens):
@@ -301,6 +330,11 @@ def parse_base_facets_expression(tokens):
 def parse_highlight_expression(tokens):
     """Generates query DSL from parsed single highlight fields from query."""
     return Highlight({k: v for t in tokens.asList() for k, v in t.items()})
+
+
+def parse_sort_expression(tokens):
+    """Generates query DSL from parsed single sort fields from query."""
+    return Sort({k: v for t in tokens.asList() for k, v in t.items()})
 
 
 def parse_base_aggs_expression(tokens):

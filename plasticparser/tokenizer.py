@@ -13,7 +13,8 @@ from .grammar_parsers import (
     parse_type_expression, parse_one_or_more_logical_expressions,
     parse_type_logical_facets_expression, parse_one_or_more_aggs_expression,
     parse_single_aggs_expression, parse_base_aggs_expression,
-    parse_highlight_expression, parse_highlight_field_expression)
+    parse_highlight_expression, parse_highlight_field_expression,
+    parse_sort_field_expression, parse_sort_expression)
 
 unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                               if not unichr(c).isspace())
@@ -52,6 +53,18 @@ def get_highlight_expression():
         + Word('[').suppress() \
         + fields_expression + Word(']').suppress()
     return highlight_expression
+
+
+def get_sort_expression():
+    field_expression = Optional(Word('-')) + Word(srange("[a-zA-Z0-9_.*]"))
+    field_expression.setParseAction(parse_sort_field_expression)
+    fields_expression = OneOrMore(
+        field_expression + Optional(',').suppress())
+    fields_expression.setParseAction(parse_sort_expression)
+    sort_expression = Word('sort:').suppress() \
+        + Word('[').suppress() \
+        + fields_expression + Word(']').suppress()
+    return sort_expression
 
 
 def get_logical_expression():
@@ -152,6 +165,7 @@ def _construct_grammar():
 
     facets_expression = get_facet_expression()
     highlight_expression = get_highlight_expression()
+    sort_expression = get_sort_expression()
     aggs_expression = get_aggregations_expression()
     nested_expression = get_nested_expression()
 
@@ -163,6 +177,7 @@ def _construct_grammar():
     type_expression.setParseAction(parse_type_expression)
 
     base_expression = Optional(highlight_expression)\
+        + Optional(sort_expression)\
         + Optional(type_expression)\
         + ZeroOrMore(
             (facets_expression
