@@ -3,7 +3,8 @@
 from peak.util.proxies import LazyProxy
 from pyparsing import (
     Word, QuotedString, oneOf, CaselessLiteral, White,
-    OneOrMore, Optional, alphanums, srange, ZeroOrMore, CaselessKeyword)
+    OneOrMore, Optional, alphanums, srange, ZeroOrMore, CaselessKeyword,
+    nestedExpr, Forward, Group)
 from .grammar_parsers import (
     parse_logical_expression, parse_compare_expression, parse_free_text,
     parse_paren_base_logical_expression, join_brackets, join_words,
@@ -14,7 +15,8 @@ from .grammar_parsers import (
     parse_type_logical_facets_expression, parse_one_or_more_aggs_expression,
     parse_single_aggs_expression, parse_base_aggs_expression,
     parse_highlight_expression, parse_highlight_field_expression,
-    parse_sort_field_expression, parse_sort_expression)
+    parse_sort_field_expression, parse_sort_expression,
+    parse_sort_field_option)
 
 unicode_printables = u''.join(unichr(c) for c in xrange(65536)
                               if not unichr(c).isspace())
@@ -56,10 +58,39 @@ def get_highlight_expression():
 
 
 def get_sort_expression():
-    field_expression = Optional(Word('-')) + Word(srange("[a-zA-Z0-9_.*]"))
+    value_expression = Word(srange("[a-zA-Z0-9_.*]"))
+    value_expression.setParseAction(lambda tokens: tokens[0])
+
+    quoted_value_expression = Word('"').suppress() +\
+        value_expression + Word('"').suppress()
+
+    option_value = value_expression | quoted_value_expression
+    option_value.setParseAction(lambda tokens: tokens[0])
+
+    simple_option = Word(srange("[a-zA-Z0-9_.*]")) +\
+        Word(':').suppress() + option_value
+
+    simple_option.setParseAction(lambda tokens: (tokens[0], tokens[1]))
+
+    option = Forward()
+    option << (simple_option |
+               (Word(srange("[a-zA-Z0-9_.*]")) +
+                Word(':').suppress() +
+                nestedExpr(content=option)))
+
+    option.setParseAction(
+        lambda tokens: parse_sort_field_option(tokens.asList())
+    )
+
+    exp = option + ZeroOrMore(Word(',').suppress() + option)
+
+    field_expression = Optional('-') + Word(
+        srange("[a-zA-Z0-9_.*]")
+    ) + Optional(nestedExpr(content=exp))
+
     field_expression.setParseAction(parse_sort_field_expression)
-    fields_expression = OneOrMore(
-        field_expression + Optional(',').suppress())
+    fields_expression = field_expression + ZeroOrMore(
+        Word(',').suppress() + field_expression)
     fields_expression.setParseAction(parse_sort_expression)
     sort_expression = Word('sort:').suppress() \
         + Word('[').suppress() \
