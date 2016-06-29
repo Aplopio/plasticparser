@@ -466,7 +466,7 @@ class TokenizerTest(unittest.TestCase):
         })
 
     def test_should_add_sort_fields(self):
-        query_string = "sort:[aaa] asdasd"
+        query_string = 'sort:[-sfield(missing:_last)] asdasd'
         parsed_string = tokenizer.tokenize(query_string)
         self.assertEqual(parsed_string, {
             'query': {
@@ -487,7 +487,40 @@ class TokenizerTest(unittest.TestCase):
                 }
             },
             'sort': {
-                'aaa': {"order": "asc"}
+                'sfield': {"order": "desc", "missing": "_last"}
+            }
+        })
+
+    def test_should_add_sort_fields_with_options(self):
+        query_string = 'sort:[inbox_sort.user(missing:_last,nested_path:inbox_sort,nested_filter:(term:(inbox_sort.user:3)))] asdasd'
+        parsed_string = tokenizer.tokenize(query_string)
+        self.assertEqual(parsed_string, {
+            'query': {
+                'filtered': {
+                    'filter': {
+                        'bool': {
+                            'should': [],
+                            'must_not': [],
+                            'must': []
+                        }
+                    },
+                    'query': {
+                        'query_string': {
+                            'query': u'asdasd',
+                            'default_operator': 'and'
+                        }
+                    }
+                }
+            },
+            'sort': {
+                "inbox_sort.user": {
+                    "order": "asc",
+                    "nested_path": "inbox_sort",
+                    "nested_filter": {
+                        "term": {"inbox_sort.user":  '3'}
+                    },
+                    "missing": "_last"
+                }
             }
         })
 

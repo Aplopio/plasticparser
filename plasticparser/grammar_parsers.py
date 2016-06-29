@@ -245,6 +245,12 @@ def parse_highlight_field_expression(tokens):
     return {tokens[0]: {}}
 
 
+def parse_sort_field_option(tokens):
+    if len(tokens) > 1:
+        return (tokens[0], parse_sort_field_option(tokens[1]))
+    return tokens[0][0], tokens[0][1]
+
+
 def parse_sort_field_expression(tokens):
     """Parse single sort field from query.
     eg:
@@ -253,11 +259,27 @@ def parse_sort_field_expression(tokens):
     parsed output:
     {"field1": {}} and {"field2": {}}
     """
+    result = {}
+    tokens = tokens.asList()
+    order = 'desc' if "-" in tokens else 'asc'
+    if order == 'desc':
+        tokens.pop(0)
+
+    def to_dict(toks):
+        if type(toks) == tuple:
+            if type(toks[1]) == tuple:
+                return {toks[0]: to_dict(toks[1])}
+            else:
+                return {toks[0]: toks[1]}
+        return toks
 
     if len(tokens) > 1:
-        return {tokens[1]: {"order": "desc"}}
+        result = {tokens[0]: {t[0]: to_dict(t[1]) for t in tokens[1]}}
     else:
-        return {tokens[0]: {"order": "asc"}}
+        result = {tokens[0]: {}}
+
+    result[tokens[0]]['order'] = order
+    return result
 
 
 def parse_single_aggs_expression(tokens):
